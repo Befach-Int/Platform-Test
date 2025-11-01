@@ -5000,6 +5000,11 @@
                     document.getElementById('apiKeyInputSection').classList.add('hidden');
                     const headerStatus = document.getElementById('chatHeaderApiStatus');
                     if (headerStatus) headerStatus.classList.remove('hidden');
+                } else {
+                    // No API key stored, show input section
+                    document.getElementById('apiKeyInputSection').classList.remove('hidden');
+                    const headerStatus = document.getElementById('chatHeaderApiStatus');
+                    if (headerStatus) headerStatus.classList.add('hidden');
                 }
             },
 
