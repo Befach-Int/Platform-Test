@@ -5518,15 +5518,49 @@
 
                 // Check if we have workspaces
                 if (this.workspaces.length === 0) {
-                    // No workspaces - show welcome screen
-                    console.log('ℹ️ No workspaces found - showing welcome screen');
-                    this.loadApiKey();
-                    this.loadModel();
-                    this.loadTavilyApiKey();
-                    this.renderWorkspaceSelector();
-                    this.showWorkspaceWelcome();
-                    this.updateSyncStatus();
-                    return;
+                    // Check if there are features that need a workspace
+                    const stored = localStorage.getItem('roadmapFeatures');
+                    const localFeatures = stored ? JSON.parse(stored) : [];
+
+                    if (localFeatures.length > 0) {
+                        // Features exist but no workspace - create one automatically
+                        console.log(`⚠️ Found ${localFeatures.length} features without workspace. Creating default workspace...`);
+
+                        const defaultWorkspace = await this.createWorkspace(
+                            'My Roadmap',
+                            'Default workspace containing your features',
+                            '#3b82f6',
+                            '📊'
+                        );
+
+                        // Assign all features to this workspace
+                        localFeatures.forEach(f => {
+                            if (!f.workspaceId) {
+                                f.workspaceId = defaultWorkspace.id;
+                            }
+                        });
+                        localStorage.setItem('roadmapFeatures', JSON.stringify(localFeatures));
+
+                        // Set as current workspace
+                        this.currentWorkspaceId = defaultWorkspace.id;
+                        localStorage.setItem('currentWorkspaceId', defaultWorkspace.id);
+
+                        // Sync to Supabase
+                        await this.saveData();
+
+                        console.log(`✅ Created default workspace and assigned ${localFeatures.length} features`);
+                        // Continue with normal initialization
+                    } else {
+                        // No workspaces AND no features - show welcome screen
+                        console.log('ℹ️ No workspaces found - showing welcome screen');
+                        this.loadApiKey();
+                        this.loadModel();
+                        this.loadTavilyApiKey();
+                        this.renderWorkspaceSelector();
+                        this.showWorkspaceWelcome();
+                        this.updateSyncStatus();
+                        return;
+                    }
                 }
 
                 // Load last used workspace or first workspace
