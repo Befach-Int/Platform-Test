@@ -1,0 +1,19 @@
+{
+  "name": "platform-roadmap-manager",
+  "version": "1.0.0",
+  "description": "Platform Roadmap Manager with MCP UI component generation",
+  "type": "module",
+  "scripts": {
+    "mcp-ui": "node mcp-ui-server.js"
+  },
+  "dependencies": {
+    "@mcp-ui/server": "^5.13.1"
+  },
+  "keywords": [
+    "roadmap",
+    "mcp",
+    "ui-components"
+  ],
+  "author": "",
+  "license": "MIT"
+}
