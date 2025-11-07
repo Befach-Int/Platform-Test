@@ -724,6 +724,19 @@ const supabaseService = {
                         icon: workspace.icon || '📊',
                         custom_instructions: workspace.customInstructions || null,
                         ai_memory: workspace.aiMemory || [],
+                        workflow_mode_enabled: workspace.workflowModeEnabled || false,
+                        workflow_config: workspace.workflowConfig || {
+                            enableIdeationStage: true,
+                            enablePlanningStage: true,
+                            enableExecutionStage: true,
+                            autoAdvanceStages: false,
+                            showStageGuides: true,
+                            stageRequirements: {
+                                ideation: ['inspirationItems', 'risks'],
+                                planning: ['executionSteps', 'milestones'],
+                                execution: ['status', 'progress']
+                            }
+                        },
                         created_at: workspace.createdAt || new Date().toISOString(),
                         updated_at: workspace.updatedAt || new Date().toISOString()
                     };
@@ -756,6 +769,8 @@ const supabaseService = {
                         icon: updates.icon,
                         custom_instructions: updates.customInstructions,
                         ai_memory: updates.aiMemory,
+                        workflow_mode_enabled: updates.workflowModeEnabled,
+                        workflow_config: updates.workflowConfig,
                         updated_at: new Date().toISOString()
                     };
 
