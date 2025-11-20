@@ -14,7 +14,7 @@ const updatePhaseAssignmentSchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -34,12 +34,12 @@ export async function PATCH(
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid request body', details: validation.error.errors, success: false },
+        { error: 'Invalid request body', details: validation.error.issues, success: false },
         { status: 400 }
       )
     }
 
-    const assignmentId = params.id
+    const { id: assignmentId } = await params
     const updates = validation.data
 
     // Check if there are any updates
@@ -140,7 +140,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -154,7 +154,7 @@ export async function DELETE(
       )
     }
 
-    const assignmentId = params.id
+    const { id: assignmentId } = await params
 
     // Get assignment details with workspace info
     const { data: assignment, error: assignmentError } = await supabase

@@ -57,10 +57,11 @@ platform-test/
 │   └── migrations/             # Database migrations (24 total)
 │
 ├── docs/                       # Documentation
-│   ├── IMPLEMENTATION_PLAN.md  # 8-week roadmap
-│   ├── RECOMMENDED_AGENTS.md   # Claude agents by phase
-│   ├── MIND_MAP_ENHANCEMENTS.md # Postponed features
-│   └── MCP_OPTIMIZATION_SUMMARY.md # MCP configuration
+│   ├── implementation/         # Week-by-week implementation guide
+│   ├── planning/               # Project management & progress tracking
+│   ├── reference/              # Technical references & API docs
+│   ├── postponed/              # Deferred features tracking
+│   └── processes/              # How-to guides & workflows
 │
 ├── CLAUDE.md                   # Project guidelines (700 lines)
 ├── .cursorrules                # Cursor AI behavior (570 lines)
@@ -205,10 +206,10 @@ This project uses **Model Context Protocol (MCP)** servers for enhanced AI capab
 | Document | Purpose | Lines |
 |----------|---------|-------|
 | [CLAUDE.md](CLAUDE.md) | Project guidelines, tech stack, quick reference | 700 |
-| [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) | 8-week roadmap, architecture, database schema | 2,419 |
-| [RECOMMENDED_AGENTS.md](RECOMMENDED_AGENTS.md) | Claude agents mapped to implementation phases | 614 |
+| [docs/implementation/README.md](docs/implementation/README.md) | Implementation plan overview, architecture, pricing | 318 |
+| [docs/planning/RECOMMENDED_AGENTS.md](docs/planning/RECOMMENDED_AGENTS.md) | Claude agents mapped to implementation phases | 614 |
 | [MCP_OPTIMIZATION_SUMMARY.md](MCP_OPTIMIZATION_SUMMARY.md) | MCP configuration and context optimization | 370 |
-| [MIND_MAP_ENHANCEMENTS.md](MIND_MAP_ENHANCEMENTS.md) | Postponed features (23 enhancements) | 1,672 |
+| [docs/postponed/MIND_MAP_ENHANCEMENTS.md](docs/postponed/MIND_MAP_ENHANCEMENTS.md) | Postponed features (23 enhancements) | 1,672 |
 | [.cursorrules](.cursorrules) | Cursor AI behavior and coding standards | 570 |
 
 ### Additional Documentation (Coming Soon)
@@ -360,15 +361,15 @@ See [CLAUDE.md](CLAUDE.md) for comprehensive coding guidelines.
 ### Documentation Maintenance
 
 **When to Update Documentation:**
-- ✅ Database schema changes → Update IMPLEMENTATION_PLAN.md + CHANGELOG.md
+- ✅ Database schema changes → Update docs/implementation/database-schema.md + CHANGELOG.md
 - ✅ Tech stack changes → Update README.md + CLAUDE.md
 - ✅ Process changes → Update CLAUDE.md + .cursorrules
-- ✅ Phase completions → Update IMPLEMENTATION_PLAN.md + PROGRESS.md
-- ✅ Postponed features → Create [FEATURE_NAME].md + Update IMPLEMENTATION_PLAN.md
+- ✅ Phase completions → Update docs/implementation/week-X-Y.md + PROGRESS.md
+- ✅ Postponed features → Create docs/postponed/[FEATURE_NAME].md + Update postponed-features.md
 
 **Documentation Sync Schedule:**
 - **Daily**: Update PROGRESS.md, add CHANGELOG.md entries
-- **Weekly**: Review IMPLEMENTATION_PLAN.md, update README.md
+- **Weekly**: Review docs/implementation/week-X-Y.md, update README.md
 - **Monthly**: Full documentation audit, fix inconsistencies
 
 ---
@@ -391,7 +392,7 @@ See [CLAUDE.md](CLAUDE.md) for comprehensive coding guidelines.
 4. Add critical path analysis
 5. Set up testing infrastructure (Playwright)
 
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for detailed weekly breakdown.
+See [docs/implementation/README.md](docs/implementation/README.md) for detailed implementation plan and weekly breakdown.
 
 ---
 

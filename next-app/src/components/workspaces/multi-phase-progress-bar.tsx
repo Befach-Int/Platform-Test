@@ -88,14 +88,14 @@ export function MultiPhaseProgressBar({
               >
                 {/* Show emoji icon if segment is wide enough */}
                 {data.percentage > 10 && (
-                  <span className="text-xl">{phase.icon}</span>
+                  <phase.icon className="h-5 w-5" />
                 )}
 
                 {/* Hover tooltip */}
                 {hoveredPhase === phaseId && (
                   <div className="absolute -top-20 left-1/2 z-10 w-64 -translate-x-1/2 rounded-lg border bg-white p-3 shadow-lg">
                     <div className="mb-1 flex items-center gap-2">
-                      <span className="text-2xl">{phase.icon}</span>
+                      <phase.icon className="h-6 w-6" />
                       <div>
                         <p className="font-semibold">{phase.name}</p>
                         <p className="text-xs text-muted-foreground">{phase.description}</p>
@@ -141,7 +141,7 @@ export function MultiPhaseProgressBar({
               onMouseLeave={() => setHoveredPhase(null)}
             >
               <div className="mb-1 flex items-center gap-2">
-                <span className="text-xl">{phase.icon}</span>
+                <phase.icon className="h-5 w-5" />
                 <span className={cn('text-sm font-semibold', phase.textColor)}>
                   {phase.name}
                 </span>

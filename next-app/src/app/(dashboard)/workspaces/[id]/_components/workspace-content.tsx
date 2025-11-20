@@ -5,6 +5,7 @@ import { FeaturesView } from './features-view';
 import { TimelineView } from './timeline-view';
 import { MindMapView } from './mind-map-view';
 import { DependenciesView } from './dependencies-view';
+import { CanvasView } from './canvas-view';
 import { SettingsView } from './settings-view';
 import { TeamAnalyticsView } from './team-analytics-view';
 
@@ -75,21 +76,13 @@ export function WorkspaceContent({
           />
         );
 
+      case 'canvas':
       case 'mind-map':
-        return (
-          <MindMapView
-            workspace={workspace}
-            mindMaps={mindMaps}
-            currentUserId={currentUserId}
-          />
-        );
-
       case 'dependencies':
         return (
-          <DependenciesView
+          <CanvasView
             workspace={workspace}
             workItems={workItems}
-            timelineItems={timelineItems}
             linkedItems={linkedItems}
           />
         );
@@ -126,17 +119,6 @@ export function WorkspaceContent({
 
   return (
     <div className="flex-1 overflow-auto">
-      {/* Header remains consistent across views */}
-      <header className="sticky top-0 z-10 border-b bg-white shadow-sm">
-        <div className="px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">{workspace.name}</h1>
-            <p className="text-sm text-muted-foreground">{team?.name}</p>
-          </div>
-          {/* View breadcrumb or actions can go here */}
-        </div>
-      </header>
-
       {/* View-specific content */}
       <main className="px-8 py-6">
         {renderView()}

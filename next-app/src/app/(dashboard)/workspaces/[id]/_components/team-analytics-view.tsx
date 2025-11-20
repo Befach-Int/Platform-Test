@@ -10,9 +10,9 @@ export function TeamAnalyticsView({ workspace }: TeamAnalyticsViewProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Team Phase Analytics</h2>
+        <h2 className="text-2xl font-bold">Project Team</h2>
         <p className="text-muted-foreground">
-          Overview of phase lead distribution and team coverage for this workspace
+          Manage team members assigned to this workspace and their phase-specific roles. View phase leads, coverage analytics, and assign members to different project phases.
         </p>
       </div>
 

@@ -19,7 +19,7 @@ interface TopBarProps {
   onMenuClick?: () => void
 }
 
-export function AcmeTopBar({ sectionName, userEmail, userName, onMenuClick }: TopBarProps) {
+export function AppTopBar({ sectionName, userEmail, userName, onMenuClick }: TopBarProps) {
   const getUserInitials = () => {
     if (userName) {
       return userName
@@ -53,7 +53,7 @@ export function AcmeTopBar({ sectionName, userEmail, userName, onMenuClick }: To
       {/* Right: User menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon" className="rounded-full" suppressHydrationWarning>
             <Avatar className="h-8 w-8">
               <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
                 {getUserInitials()}
@@ -61,7 +61,7 @@ export function AcmeTopBar({ sectionName, userEmail, userName, onMenuClick }: To
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-56 z-[100]">
           <DropdownMenuLabel>
             <div className="flex flex-col">
               <span className="text-sm font-medium">{userName || 'User'}</span>
@@ -73,7 +73,9 @@ export function AcmeTopBar({ sectionName, userEmail, userName, onMenuClick }: To
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Log out</DropdownMenuItem>
+          <DropdownMenuItem>
+            <span className="text-red-500">Log out</span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

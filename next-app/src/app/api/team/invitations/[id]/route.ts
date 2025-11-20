@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -21,7 +21,7 @@ export async function DELETE(
       )
     }
 
-    const invitationId = params.id
+    const { id: invitationId } = await params
 
     // Get invitation details
     const { data: invitation, error: invitationError } = await supabase

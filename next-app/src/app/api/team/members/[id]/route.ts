@@ -13,7 +13,7 @@ const updateMemberSchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -33,13 +33,13 @@ export async function PATCH(
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid request body', details: validation.error.errors, success: false },
+        { error: 'Invalid request body', details: validation.error.issues, success: false },
         { status: 400 }
       )
     }
 
     const { role: newRole } = validation.data
-    const memberId = params.id
+    const { id: memberId } = await params
 
     // Get target member details
     const { data: targetMember, error: targetMemberError } = await supabase
@@ -155,7 +155,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -169,7 +169,7 @@ export async function DELETE(
       )
     }
 
-    const memberId = params.id
+    const { id: memberId } = await params
 
     // Get target member details
     const { data: targetMember, error: targetMemberError } = await supabase
@@ -251,20 +251,25 @@ export async function DELETE(
     }
 
     // Delete phase assignments first (cascade should handle this, but explicit is better)
-    const { error: assignmentsDeleteError } = await supabase
-      .from('user_phase_assignments')
-      .delete()
-      .eq('user_id', targetMember.user_id)
-      .in('workspace_id',
-        supabase
-          .from('workspaces')
-          .select('id')
-          .eq('team_id', targetMember.team_id)
-      )
+    // First get workspace IDs for this team
+    const { data: teamWorkspaces } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('team_id', targetMember.team_id)
 
-    if (assignmentsDeleteError) {
-      console.error('Error deleting phase assignments:', assignmentsDeleteError)
-      // Don't fail the operation, let cascade handle it
+    const workspaceIds = teamWorkspaces?.map(w => w.id) || []
+
+    if (workspaceIds.length > 0) {
+      const { error: assignmentsDeleteError } = await supabase
+        .from('user_phase_assignments')
+        .delete()
+        .eq('user_id', targetMember.user_id)
+        .in('workspace_id', workspaceIds)
+
+      if (assignmentsDeleteError) {
+        console.error('Error deleting phase assignments:', assignmentsDeleteError)
+        // Don't fail the operation, let cascade handle it
+      }
     }
 
     // Delete team member

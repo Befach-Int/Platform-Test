@@ -415,7 +415,7 @@ If you need to re-enable any removed MCP:
 
 ## 📚 Additional Resources
 
-- **Implementation Plan**: [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)
+- **Implementation Plan**: [docs/implementation/README.md](./docs/implementation/README.md)
 - **Agent Guide**: [RECOMMENDED_AGENTS.md](./RECOMMENDED_AGENTS.md)
 - **MCP Backup**: [cursor-mcp-config.BACKUP.json](./cursor-mcp-config.BACKUP.json)
 - **Cursor Rules**: [.cursorrules](./.cursorrules)
