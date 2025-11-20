@@ -42,7 +42,7 @@ import type { InvitationPhaseAssignment } from '@/lib/types/team'
 const inviteSchema = z.object({
   email: z.string().email('Invalid email address'),
   role: z.enum(['admin', 'member'], {
-    required_error: 'Please select a role',
+    message: 'Please select a role',
   }),
   workspace_id: z.string().min(1, 'Please select a workspace'),
   phases: z.array(z.string()).min(1, 'Please select at least one phase'),
@@ -308,15 +308,15 @@ export function InviteMemberDialog({
                                       return checked
                                         ? field.onChange([...field.value, phase])
                                         : field.onChange(
-                                            field.value?.filter((value) => value !== phase)
-                                          )
+                                          field.value?.filter((value) => value !== phase)
+                                        )
                                     }}
                                     disabled={mutation.isPending}
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
                                   <Label className="flex items-center gap-2 cursor-pointer">
-                                    <span className="text-lg">{config.icon}</span>
+                                    <config.icon className="h-5 w-5" />
                                     <span className="font-medium">{config.name}</span>
                                   </Label>
                                   <p className="text-sm text-muted-foreground">

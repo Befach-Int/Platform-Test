@@ -222,6 +222,164 @@ export const userJourneyTemplate: MindMapTemplate = {
 }
 
 // ============================================================================
+// Template 4: SaaS Product Launch
+// ============================================================================
+
+export const saasProductTemplate: MindMapTemplate = {
+  id: 'saas-product-launch',
+  name: 'SaaS Product Launch',
+  description: 'Plan a complete SaaS product from MVP to launch',
+  icon: '🚀',
+  category: 'product',
+  nodes: [
+    {
+      id: 'node-1',
+      type: 'idea',
+      title: 'SaaS Product Vision',
+      description: 'Core value proposition',
+      position: { x: 300, y: 50 },
+    },
+    {
+      id: 'node-2',
+      type: 'feature',
+      title: 'MVP Features',
+      description: 'Core features for launch',
+      position: { x: 100, y: 200 },
+    },
+    {
+      id: 'node-3',
+      type: 'feature',
+      title: 'User Authentication',
+      description: 'Sign up, login, SSO',
+      position: { x: 300, y: 200 },
+    },
+    {
+      id: 'node-4',
+      type: 'feature',
+      title: 'Billing & Payments',
+      description: 'Stripe integration, subscriptions',
+      position: { x: 500, y: 200 },
+    },
+    {
+      id: 'node-5',
+      type: 'solution',
+      title: 'Marketing Strategy',
+      description: 'How to reach customers',
+      position: { x: 150, y: 350 },
+    },
+    {
+      id: 'node-6',
+      type: 'solution',
+      title: 'Launch Timeline',
+      description: '3-month roadmap',
+      position: { x: 450, y: 350 },
+    },
+    {
+      id: 'node-7',
+      type: 'question',
+      title: 'Pricing Model',
+      description: 'Freemium vs paid only?',
+      position: { x: 300, y: 500 },
+    },
+  ],
+  edges: [
+    { id: 'edge-1', source: 'node-1', target: 'node-2' },
+    { id: 'edge-2', source: 'node-1', target: 'node-3' },
+    { id: 'edge-3', source: 'node-1', target: 'node-4' },
+    { id: 'edge-4', source: 'node-2', target: 'node-5' },
+    { id: 'edge-5', source: 'node-4', target: 'node-6' },
+    { id: 'edge-6', source: 'node-6', target: 'node-7' },
+  ],
+}
+
+// ============================================================================
+// Template 5: Mobile App Development
+// ============================================================================
+
+export const mobileAppTemplate: MindMapTemplate = {
+  id: 'mobile-app-dev',
+  name: 'Mobile App Development',
+  description: 'Plan a mobile app with cross-platform features',
+  icon: '📱',
+  category: 'product',
+  nodes: [
+    {
+      id: 'node-1',
+      type: 'feature',
+      title: 'Mobile App Core',
+      description: 'Main app functionality',
+      position: { x: 300, y: 50 },
+    },
+    {
+      id: 'node-2',
+      type: 'idea',
+      title: 'iOS Features',
+      description: 'Apple-specific features',
+      position: { x: 100, y: 200 },
+    },
+    {
+      id: 'node-3',
+      type: 'idea',
+      title: 'Android Features',
+      description: 'Android-specific features',
+      position: { x: 300, y: 200 },
+    },
+    {
+      id: 'node-4',
+      type: 'idea',
+      title: 'Web App (PWA)',
+      description: 'Progressive web app version',
+      position: { x: 500, y: 200 },
+    },
+    {
+      id: 'node-5',
+      type: 'solution',
+      title: 'Offline Support',
+      description: 'Local storage and sync',
+      position: { x: 100, y: 350 },
+    },
+    {
+      id: 'node-6',
+      type: 'solution',
+      title: 'Push Notifications',
+      description: 'User engagement alerts',
+      position: { x: 300, y: 350 },
+    },
+    {
+      id: 'node-7',
+      type: 'solution',
+      title: 'Analytics Tracking',
+      description: 'User behavior insights',
+      position: { x: 500, y: 350 },
+    },
+    {
+      id: 'node-8',
+      type: 'problem',
+      title: 'Platform Challenges',
+      description: 'Different OS requirements',
+      position: { x: 200, y: 500 },
+    },
+    {
+      id: 'node-9',
+      type: 'question',
+      title: 'Tech Stack',
+      description: 'React Native or Flutter?',
+      position: { x: 400, y: 500 },
+    },
+  ],
+  edges: [
+    { id: 'edge-1', source: 'node-1', target: 'node-2' },
+    { id: 'edge-2', source: 'node-1', target: 'node-3' },
+    { id: 'edge-3', source: 'node-1', target: 'node-4' },
+    { id: 'edge-4', source: 'node-2', target: 'node-5' },
+    { id: 'edge-5', source: 'node-3', target: 'node-6' },
+    { id: 'edge-6', source: 'node-4', target: 'node-7' },
+    { id: 'edge-7', source: 'node-2', target: 'node-8' },
+    { id: 'edge-8', source: 'node-3', target: 'node-9' },
+  ],
+}
+
+// ============================================================================
 // Template Registry
 // ============================================================================
 
@@ -229,6 +387,8 @@ export const MIND_MAP_TEMPLATES: MindMapTemplate[] = [
   productIdeationTemplate,
   featurePlanningTemplate,
   userJourneyTemplate,
+  saasProductTemplate,
+  mobileAppTemplate,
 ]
 
 export function getTemplateById(id: string): MindMapTemplate | undefined {

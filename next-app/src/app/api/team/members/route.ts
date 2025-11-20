@@ -70,42 +70,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get phase assignments for all members
-    const userIds = members.map(m => m.users.id)
-    const { data: phaseAssignments, error: assignmentsError } = await supabase
-      .from('user_phase_assignments')
-      .select(`
-        id,
-        user_id,
-        workspace_id,
-        phase,
-        can_edit,
-        notes,
-        created_at,
-        workspace:workspaces!inner(id, name)
-      `)
-      .in('user_id', userIds)
-      .eq('workspaces.team_id', team_id)
-
-    if (assignmentsError) {
-      console.error('Error fetching phase assignments:', assignmentsError)
-      // Don't fail the request, just return members without assignments
-    }
-
-    // Combine members with their phase assignments
-    // Match TypeScript interface: TeamMemberWithPhases
-    const membersWithPhases = members.map(member => ({
-      id: member.id,
-      user_id: member.user_id,
-      team_id: team_id,
-      role: member.role,
-      joined_at: member.joined_at,
-      users: member.users,
-      phase_assignments: phaseAssignments?.filter(pa => pa.user_id === member.users.id) || []
-    }))
-
     return NextResponse.json({
-      data: membersWithPhases,
+      data: members,
       success: true
     })
 

@@ -65,15 +65,16 @@ Next.js setup, authentication, teams, workspaces
 - [ ] Phase selector (dropdown in header)
 - [ ] Module toggle system (`/app/(dashboard)/settings/modules/page.tsx`)
 - [ ] Workspace switcher (header)
-- [ ] Navigation sidebar (collapsible)
-  - [ ] Dashboard link
-  - [ ] Mind Map link
-  - [ ] Features link
-  - [ ] Dependencies link
-  - [ ] Timeline link
-  - [ ] Review link (Pro badge)
-  - [ ] Analytics link
-  - [ ] Settings link
+- [x] Navigation sidebar (collapsible)
+  - [x] Dashboard link
+  - [x] Mind Map link
+  - [x] Features link
+  - [x] Dependencies link
+  - [x] Timeline link
+  - [x] Review link (Pro badge)
+  - [x] Analytics link
+  - [x] Settings link
+  - [x] **Improved with shadcn/ui components and workspace switcher**
 
 ---
 

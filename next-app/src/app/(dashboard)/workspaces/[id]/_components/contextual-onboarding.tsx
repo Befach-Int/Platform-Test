@@ -142,7 +142,7 @@ export function ContextualOnboarding({ workspaceId, onboardingState }: Contextua
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{phaseConfig.icon}</span>
+            <phaseConfig.icon className="h-8 w-8" />
             <div>
               <CardTitle className="flex items-center gap-2">
                 {guidance.title}

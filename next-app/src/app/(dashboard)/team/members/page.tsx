@@ -10,9 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, UserPlus, Users } from 'lucide-react'
+import { Loader2, UserPlus, Users, Info } from 'lucide-react'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamMemberRow } from '@/components/team/team-member-row'
 import { PendingInvitationCard } from '@/components/team/pending-invitation-card'
@@ -85,7 +86,8 @@ export default function TeamMembersPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch team members')
       }
-      return response.json() as Promise<TeamMember[]>
+      const json = await response.json()
+      return json.data as TeamMember[]
     },
     enabled: !!teamId,
   })
@@ -103,7 +105,8 @@ export default function TeamMembersPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch invitations')
       }
-      return response.json() as Promise<PendingInvitation[]>
+      const json = await response.json()
+      return json.data as PendingInvitation[]
     },
     enabled: !!teamId && (currentUserRole === 'owner' || currentUserRole === 'admin'),
   })
@@ -144,9 +147,9 @@ export default function TeamMembersPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Members</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Organization Members</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your team members and their permissions
+            Manage all members in your organization, send invitations, and set organization-wide roles. For workspace-specific assignments, use the &quot;Project Team&quot; view within each workspace.
           </p>
         </div>
         {canManage && teamId && (
@@ -161,6 +164,15 @@ export default function TeamMembersPage() {
           />
         )}
       </div>
+
+      {/* Info Banner */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Organization vs Project Team:</strong> This page manages your entire organization&apos;s membership.
+          To assign specific members to a workspace and set phase-specific roles, go to the <strong>Project Team</strong> view within that workspace.
+        </AlertDescription>
+      </Alert>
 
       {/* Team Members Card */}
       <Card>

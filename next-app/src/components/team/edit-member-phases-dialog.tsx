@@ -238,13 +238,12 @@ export function EditMemberPhasesDialog({
               </div>
               <Badge
                 variant={member.role === 'owner' ? 'default' : 'secondary'}
-                className={`${
-                  member.role === 'owner'
+                className={`${member.role === 'owner'
                     ? 'bg-purple-100 text-purple-700'
                     : member.role === 'admin'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-slate-100 text-slate-700'
-                }`}
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}
               >
                 {member.role === 'owner' && <Crown className="mr-1 h-3 w-3" />}
                 {member.role === 'admin' && <Shield className="mr-1 h-3 w-3" />}
@@ -269,10 +268,7 @@ export function EditMemberPhasesDialog({
                 return (
                   <div key={phase} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: phaseConfig.color }}
-                      />
+                      <phaseConfig.icon className="h-4 w-4" />
                       <h4 className="font-medium">{phaseConfig.name}</h4>
                       {currentLeadCount > 0 && (
                         <Badge variant="outline" className="text-xs">

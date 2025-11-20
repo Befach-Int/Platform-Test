@@ -73,10 +73,13 @@ export async function GET(request: NextRequest) {
     }))
 
     // Return invitation details
+    const team = Array.isArray(invitation.teams) ? invitation.teams[0] : invitation.teams
+    const inviter = Array.isArray(invitation.invited_by_user) ? invitation.invited_by_user[0] : invitation.invited_by_user
+
     return NextResponse.json({
-      team_name: invitation.teams.name,
-      inviter_name: invitation.invited_by_user?.name || null,
-      inviter_email: invitation.invited_by_user?.email || '',
+      team_name: team?.name || 'Unknown Team',
+      inviter_name: inviter?.name || null,
+      inviter_email: inviter?.email || '',
       role: invitation.role,
       workspaces: workspaceAccess,
       expires_at: invitation.expires_at,

@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { WorkspaceGeneralSettings } from '@/components/workspaces/settings/workspace-general-settings'
 import { ModulesSettings } from '@/components/workspaces/settings/modules-settings'
 import { FeaturesModuleSettings } from '@/components/workspaces/settings/features-module-settings'
+import { WorkspacePermissionsSettings } from '@/components/workspaces/settings/workspace-permissions-settings'
 
 export default async function WorkspaceSettingsPage({
   params,
@@ -12,6 +13,11 @@ export default async function WorkspaceSettingsPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Get workspace
   const { data: workspace, error } = await supabase
@@ -41,7 +47,7 @@ export default async function WorkspaceSettingsPage({
       </TabsList>
 
       <TabsContent value="general" className="space-y-4">
-        <WorkspaceGeneralSettings workspace={workspace} />
+        <WorkspaceGeneralSettings workspace={workspace} currentUserId={user?.id} />
       </TabsContent>
 
       <TabsContent value="modules" className="space-y-4">
@@ -53,13 +59,7 @@ export default async function WorkspaceSettingsPage({
       </TabsContent>
 
       <TabsContent value="permissions" className="space-y-4">
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-2">Team Permissions</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Manage team member access and roles for this workspace.
-          </p>
-          <p className="text-sm text-yellow-600">Coming soon</p>
-        </div>
+        <WorkspacePermissionsSettings workspace={workspace} currentUserId={user?.id} />
       </TabsContent>
     </Tabs>
   )

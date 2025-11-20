@@ -55,12 +55,13 @@ export async function GET(request: NextRequest) {
 
     // Check phase assignments if member exists
     let phaseAssignments = null
-    if (memberWithEmail) {
-      const { data: assignments } = await supabase
-        .from('user_phase_assignments')
-        .select('*')
-        .eq('user_id', memberWithEmail.user_id)
-    }
+    // Note: This code is disabled because memberWithEmail is null
+    // if (memberWithEmail) {
+    //   const { data: assignments } = await supabase
+    //     .from('user_phase_assignments')
+    //     .select('*')
+    //     .eq('user_id', memberWithEmail.user_id)
+    // }
 
     return NextResponse.json({
       email,

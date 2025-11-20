@@ -1,18 +1,32 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import * as dotenv from 'dotenv';
+
+// Load test environment variables
+dotenv.config({ path: path.join(__dirname, '.env.test') });
 
 /**
  * Playwright E2E Testing Configuration
  *
  * Tests the Product Lifecycle Management Platform with focus on:
- * - Authentication flows
- * - Mind mapping features
- * - Feature management (CRUD)
- * - Dependency graph
+ * - Authentication flows (magic link, password)
+ * - Mind mapping features (canvas, nodes, edges)
+ * - Feature management (CRUD operations)
+ * - Dependency graph and relationships
  * - Multi-tenant security isolation
+ * - Team management and role-based access
+ *
+ * Configuration includes:
+ * - Multiple browser support (Chromium, Firefox, WebKit)
+ * - Parallel test execution (4 workers)
+ * - Automatic screenshot/video capture on failure
+ * - HTML reporting with traces
+ * - Test retries and timeout configurations
  */
 
 export default defineConfig({
   testDir: './e2e',
+  testMatch: '*.spec.ts',
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -23,11 +37,24 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
 
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Parallel workers - reduce on CI for stability */
+  workers: process.env.CI ? 1 : 4,
 
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  /* Global test timeout */
+  timeout: 30 * 1000,
+
+  /* Expect assertions timeout */
+  expect: {
+    timeout: 10 * 1000,
+  },
+
+  /* Reporter configuration */
+  reporter: [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+    ['list'],
+  ],
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -40,26 +67,56 @@ export default defineConfig({
     /* Screenshot only on failure */
     screenshot: 'only-on-failure',
 
-    /* Video only on failure */
+    /* Video only on failure - helps with debugging */
     video: 'retain-on-failure',
+
+    /* Accept downloads */
+    acceptDownloads: true,
+
+    /* Network timeout */
+    navigationTimeout: 10 * 1000,
+
+    /* Action timeout (for individual actions like click, fill, etc.) */
+    actionTimeout: 5 * 1000,
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+      },
     },
 
-    // Uncomment to test on other browsers
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
+
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
+
+    /* Mobile browsers for responsive testing */
+    {
+      name: 'Mobile Chrome',
+      use: {
+        ...devices['Pixel 5'],
+      },
+    },
+
+    {
+      name: 'Mobile Safari',
+      use: {
+        ...devices['iPhone 12'],
+      },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
@@ -69,4 +126,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
+
+  /* Output folder for test artifacts */
+  outputDir: path.join(__dirname, 'test-results'),
 });

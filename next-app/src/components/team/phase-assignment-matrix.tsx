@@ -61,13 +61,13 @@ export function PhaseAssignmentMatrix({
       if (!response.ok) {
         throw new Error('Failed to fetch team members')
       }
-      const data = await response.json()
-      return data as { data: TeamMemberWithPhases[] }
+      const json = await response.json()
+      return json.data as TeamMemberWithPhases[]
     },
     enabled: open,
   })
 
-  const members = membersResponse?.data || []
+  const members = membersResponse || []
 
   // Fetch phase assignments for this workspace
   const { data: assignmentsResponse, isLoading: loadingAssignments } = useQuery({
@@ -185,7 +185,7 @@ export function PhaseAssignmentMatrix({
                       return (
                         <TableHead key={phase} className="text-center">
                           <div className="flex flex-col items-center gap-1">
-                            <span className="text-lg">{config.icon}</span>
+                            <config.icon className="h-5 w-5" />
                             <span className="text-xs font-medium">{config.name}</span>
                             {count > 0 && (
                               <Badge variant="outline" className="text-xs">
@@ -326,7 +326,7 @@ export function PhaseAssignmentMatrix({
 
                             return (
                               <div key={phase} className="flex flex-col items-center gap-1 p-2 border rounded">
-                                <span className="text-lg">{config.icon}</span>
+                                <config.icon className="h-5 w-5" />
                                 <span className="text-xs font-medium">{config.name}</span>
                                 {badge ? (
                                   <Badge variant={badge.variant} className={`text-xs ${badge.className}`}>

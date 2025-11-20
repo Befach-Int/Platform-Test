@@ -256,6 +256,95 @@ export function getConversionTargets(currentType: WorkItemType, phase: Workspace
 }
 
 /**
+ * Get the primary phase for a given work item type
+ * Returns the most appropriate phase where this type is primarily used
+ * @param type - Work item type
+ * @returns Primary phase for the type, or null if not found
+ */
+export function getPrimaryPhaseForType(type: WorkItemType): WorkspacePhase | null {
+  // Map each type to its primary phase (first/most relevant phase)
+  const typeToPrimaryPhase: Partial<Record<WorkItemType, WorkspacePhase>> = {
+    // Research Phase
+    [WORK_ITEM_TYPES.IDEA]: 'research',
+    [WORK_ITEM_TYPES.EXPLORATION]: 'research',
+    [WORK_ITEM_TYPES.USER_NEED]: 'research',
+
+    // Planning Phase
+    [WORK_ITEM_TYPES.CORE_FEATURE]: 'planning',
+    [WORK_ITEM_TYPES.ENHANCEMENT]: 'planning',
+
+    // Review Phase
+    [WORK_ITEM_TYPES.USER_REQUEST]: 'review',
+
+    // Execution Phase
+    [WORK_ITEM_TYPES.BUG_FIX]: 'execution',
+    [WORK_ITEM_TYPES.TECHNICAL_DEBT]: 'execution',
+    [WORK_ITEM_TYPES.INTEGRATION]: 'execution',
+
+    // Testing Phase
+    [WORK_ITEM_TYPES.PERFORMANCE_IMPROVEMENT]: 'testing',
+    [WORK_ITEM_TYPES.QUALITY_ENHANCEMENT]: 'testing',
+
+    // Metrics Phase
+    [WORK_ITEM_TYPES.ANALYTICS_FEATURE]: 'metrics',
+    [WORK_ITEM_TYPES.OPTIMIZATION]: 'metrics',
+  }
+
+  return typeToPrimaryPhase[type] || null
+}
+
+/**
+ * Get all valid phases for a given work item type
+ * @param type - Work item type
+ * @returns Array of phases where this type is valid
+ */
+export function getValidPhasesForType(type: WorkItemType): WorkspacePhase[] {
+  const validPhases: WorkspacePhase[] = []
+
+  // Check each phase to see if it includes this type
+  for (const [phase, types] of Object.entries(PHASE_ITEM_TYPES)) {
+    if (types.includes(type)) {
+      validPhases.push(phase as WorkspacePhase)
+    }
+  }
+
+  // Complete phase accepts all types
+  validPhases.push('complete')
+
+  return validPhases
+}
+
+/**
+ * Get the best phase for a type given user's assigned phases
+ * Prioritizes: 1) Primary phase if user has access, 2) First valid phase user has access to
+ * @param type - Work item type
+ * @param userAssignedPhases - Phases the user has edit access to
+ * @returns Best phase for the type, or null if user has no valid phases
+ */
+export function getBestPhaseForType(
+  type: WorkItemType,
+  userAssignedPhases: WorkspacePhase[]
+): WorkspacePhase | null {
+  // 1. Try primary phase first
+  const primaryPhase = getPrimaryPhaseForType(type)
+  if (primaryPhase && userAssignedPhases.includes(primaryPhase)) {
+    return primaryPhase
+  }
+
+  // 2. Get all valid phases for this type
+  const validPhases = getValidPhasesForType(type)
+
+  // 3. Return first valid phase that user has access to
+  for (const phase of validPhases) {
+    if (userAssignedPhases.includes(phase)) {
+      return phase
+    }
+  }
+
+  return null
+}
+
+/**
  * Get phase-appropriate helper text for the type selector
  * @param phase - Current workspace phase
  * @param showAll - Whether showing all types

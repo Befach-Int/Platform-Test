@@ -100,19 +100,19 @@ export function FeaturesTableView({
     const longTimeline = timelines.find((t) => t.timeline === 'LONG')
 
     return (
-      <TableRow key={item.id} className="hover:bg-slate-50/50 border-b border-slate-100">
+      <TableRow key={item.id} className="h-11 hover:bg-muted/50 transition-colors border-b">
         {/* Task Name */}
-        <TableCell className="font-medium">
+        <TableCell className="font-medium px-3 py-2">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{getItemIcon(item.type)}</span>
-            <span className="font-semibold">{item.name}</span>
+            <span className="text-base">{getItemIcon(item.type)}</span>
+            <span className="font-medium text-sm">{item.name}</span>
           </div>
         </TableCell>
 
         {/* Type */}
         {columnVisibility.type && (
-          <TableCell>
-            <Badge variant="outline" className="text-xs">
+          <TableCell className="px-3 py-2">
+            <Badge variant="outline" className="px-1.5 py-0.5 text-[10px] font-medium">
               {getItemLabel(item.type)}
             </Badge>
           </TableCell>
@@ -120,25 +120,25 @@ export function FeaturesTableView({
 
         {/* Timeline - Aggregated badges */}
         {columnVisibility.timeline && (
-          <TableCell>
+          <TableCell className="px-3 py-2">
             <div className="flex flex-wrap gap-1">
               {mvpTimeline && (
-                <Badge variant="outline" className={`${TIMELINE_PHASE_CONFIG.MVP.color} text-xs`}>
+                <Badge variant="outline" className={`${TIMELINE_PHASE_CONFIG.MVP.color} px-1.5 py-0.5 text-[10px] font-medium`}>
                   {TIMELINE_PHASE_CONFIG.MVP.label} · {getDifficultyConfig(mvpTimeline.difficulty).label}
                 </Badge>
               )}
               {shortTimeline && (
-                <Badge variant="outline" className={`${TIMELINE_PHASE_CONFIG.SHORT.color} text-xs`}>
+                <Badge variant="outline" className={`${TIMELINE_PHASE_CONFIG.SHORT.color} px-1.5 py-0.5 text-[10px] font-medium`}>
                   {TIMELINE_PHASE_CONFIG.SHORT.label} · {getDifficultyConfig(shortTimeline.difficulty).label}
                 </Badge>
               )}
               {longTimeline && (
-                <Badge variant="outline" className={`${TIMELINE_PHASE_CONFIG.LONG.color} text-xs`}>
+                <Badge variant="outline" className={`${TIMELINE_PHASE_CONFIG.LONG.color} px-1.5 py-0.5 text-[10px] font-medium`}>
                   {TIMELINE_PHASE_CONFIG.LONG.label} · {getDifficultyConfig(longTimeline.difficulty).label}
                 </Badge>
               )}
               {timelines.length === 0 && (
-                <span className="text-xs text-muted-foreground">No phases</span>
+                <span className="text-[11px] text-muted-foreground">No phases</span>
               )}
             </div>
           </TableCell>
@@ -146,9 +146,9 @@ export function FeaturesTableView({
 
         {/* Status */}
         {columnVisibility.status && (
-          <TableCell>
-            <Badge variant="outline" className={getStatusConfig(item.status).badgeColor}>
-              {React.createElement(getStatusConfig(item.status).icon, { className: 'h-3 w-3 mr-1' })}
+          <TableCell className="px-3 py-2">
+            <Badge variant="outline" className={`${getStatusConfig(item.status).badgeColor} px-1.5 py-0.5 text-[10px] font-medium`}>
+              {React.createElement(getStatusConfig(item.status).icon, { className: 'h-2.5 w-2.5 mr-1' })}
               {getStatusConfig(item.status).label}
             </Badge>
           </TableCell>
@@ -156,9 +156,9 @@ export function FeaturesTableView({
 
         {/* Priority */}
         {columnVisibility.priority && (
-          <TableCell>
-            <Badge variant="outline" className={getPriorityConfig(item.priority).badgeColor}>
-              {React.createElement(getPriorityConfig(item.priority).icon, { className: 'h-3 w-3 mr-1' })}
+          <TableCell className="px-3 py-2">
+            <Badge variant="outline" className={`${getPriorityConfig(item.priority).badgeColor} px-1.5 py-0.5 text-[10px] font-medium`}>
+              {React.createElement(getPriorityConfig(item.priority).icon, { className: 'h-2.5 w-2.5 mr-1' })}
               {getPriorityConfig(item.priority).label}
             </Badge>
           </TableCell>
@@ -166,8 +166,8 @@ export function FeaturesTableView({
 
         {/* Purpose */}
         {columnVisibility.purpose && (
-          <TableCell>
-            <div className="text-sm text-muted-foreground line-clamp-2 max-w-xs">
+          <TableCell className="px-3 py-2">
+            <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
               {item.purpose || 'No description'}
             </div>
           </TableCell>
@@ -175,14 +175,14 @@ export function FeaturesTableView({
 
         {/* Integration */}
         {columnVisibility.integration && (
-          <TableCell>
+          <TableCell className="px-3 py-2">
             <div className="text-xs">
               {mvpTimeline?.integration_system ? (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px] font-medium">
                   {mvpTimeline.integration_system}
                 </Badge>
               ) : (
-                <span className="text-muted-foreground">None</span>
+                <span className="text-[11px] text-muted-foreground">None</span>
               )}
             </div>
           </TableCell>
@@ -190,45 +190,45 @@ export function FeaturesTableView({
 
         {/* Tags */}
         {columnVisibility.tags && (
-          <TableCell>
+          <TableCell className="px-3 py-2">
             {item.tags && item.tags.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {item.tags.slice(0, 2).map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
+                  <Badge key={tag} variant="secondary" className="px-1.5 py-0.5 text-[10px] font-medium">
                     {tag}
                   </Badge>
                 ))}
                 {item.tags.length > 2 && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px] font-medium">
                     +{item.tags.length - 2}
                   </Badge>
                 )}
               </div>
             ) : (
-              <span className="text-xs text-muted-foreground">No tags</span>
+              <span className="text-[11px] text-muted-foreground">No tags</span>
             )}
           </TableCell>
         )}
 
         {/* Links */}
         {columnVisibility.links && (
-          <TableCell>
+          <TableCell className="px-3 py-2">
             <LinkManagementModal
               workItemId={item.id}
               workItemName={item.name}
               workspaceId={workspaceId}
               trigger={
                 item.linkedItemsCount > 0 ? (
-                  <Button variant="ghost" size="sm" className="h-7 px-2">
+                  <Button variant="ghost" size="sm" className="h-6 px-2">
                     <Link2 className="h-3 w-3 mr-1" />
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="px-1 py-0 text-[10px]">
                       {item.linkedItemsCount}
                     </Badge>
                   </Button>
                 ) : (
-                  <Button variant="ghost" size="sm" className="h-7 px-2">
+                  <Button variant="ghost" size="sm" className="h-6 px-2">
                     <Link2 className="h-3 w-3 mr-1" />
-                    <span className="text-xs">Add</span>
+                    <span className="text-[10px]">Add</span>
                   </Button>
                 )
               }
@@ -238,28 +238,28 @@ export function FeaturesTableView({
 
         {/* Date */}
         {columnVisibility.date && (
-          <TableCell>
-            <div className="text-xs text-muted-foreground">
+          <TableCell className="px-3 py-2">
+            <div className="text-[11px] text-muted-foreground">
               {new Date(item.created_at).toLocaleDateString()}
             </div>
           </TableCell>
         )}
 
         {/* Actions */}
-        <TableCell className="text-right">
-          <div className="flex items-center justify-end gap-1">
+        <TableCell className="text-right px-3 py-2">
+          <div className="flex items-center justify-end gap-0.5">
             <Link href={`/workspaces/${workspaceId}/features/${item.id}`}>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Eye className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted">
+                <Eye className="h-3.5 w-3.5" />
               </Button>
             </Link>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onDelete(item.id)}
-              className="h-8 w-8"
+              className="h-7 w-7 hover:bg-red-50 hover:text-red-600"
             >
-              <Trash2 className="h-4 w-4 text-red-600" />
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
         </TableCell>
@@ -275,35 +275,35 @@ export function FeaturesTableView({
     return (
       <React.Fragment key={item.id}>
         {/* Parent Row */}
-        <TableRow className="hover:bg-slate-50/50 border-b border-slate-100">
+        <TableRow className="h-11 hover:bg-muted/50 transition-colors border-b">
           {/* Expand/Collapse Button + Task Name */}
-          <TableCell className="font-medium">
+          <TableCell className="font-medium px-3 py-2">
             <div className="flex items-center gap-2">
               {timelines.length > 0 ? (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => toggleRowExpansion(item.id)}
-                  className="h-6 w-6 p-0"
+                  className="h-5 w-5 p-0 hover:bg-muted"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-3.5 w-3.5" />
                   ) : (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   )}
                 </Button>
               ) : (
-                <div className="w-6" />
+                <div className="w-5" />
               )}
-              <span className="text-lg">{getItemIcon(item.type)}</span>
-              <span className="font-semibold">{item.name}</span>
+              <span className="text-base">{getItemIcon(item.type)}</span>
+              <span className="font-medium text-sm">{item.name}</span>
             </div>
           </TableCell>
 
           {/* Type */}
           {columnVisibility.type && (
-            <TableCell>
-              <Badge variant="outline" className="text-xs">
+            <TableCell className="px-3 py-2">
+              <Badge variant="outline" className="px-1.5 py-0.5 text-[10px] font-medium">
                 {getItemLabel(item.type)}
               </Badge>
             </TableCell>
@@ -311,8 +311,8 @@ export function FeaturesTableView({
 
           {/* Timeline - Summary */}
           {columnVisibility.timeline && (
-            <TableCell>
-              <div className="text-sm text-muted-foreground">
+            <TableCell className="px-3 py-2">
+              <div className="text-xs text-muted-foreground">
                 {timelines.length > 0 ? `${timelines.length} phase${timelines.length > 1 ? 's' : ''}` : 'No phases'}
               </div>
             </TableCell>
@@ -320,9 +320,9 @@ export function FeaturesTableView({
 
           {/* Status */}
           {columnVisibility.status && (
-            <TableCell>
-              <Badge variant="outline" className={getStatusConfig(item.status).badgeColor}>
-                {React.createElement(getStatusConfig(item.status).icon, { className: 'h-3 w-3 mr-1' })}
+            <TableCell className="px-3 py-2">
+              <Badge variant="outline" className={`${getStatusConfig(item.status).badgeColor} px-1.5 py-0.5 text-[10px] font-medium`}>
+                {React.createElement(getStatusConfig(item.status).icon, { className: 'h-2.5 w-2.5 mr-1' })}
                 {getStatusConfig(item.status).label}
               </Badge>
             </TableCell>
@@ -330,9 +330,9 @@ export function FeaturesTableView({
 
           {/* Priority */}
           {columnVisibility.priority && (
-            <TableCell>
-              <Badge variant="outline" className={getPriorityConfig(item.priority).badgeColor}>
-                {React.createElement(getPriorityConfig(item.priority).icon, { className: 'h-3 w-3 mr-1' })}
+            <TableCell className="px-3 py-2">
+              <Badge variant="outline" className={`${getPriorityConfig(item.priority).badgeColor} px-1.5 py-0.5 text-[10px] font-medium`}>
+                {React.createElement(getPriorityConfig(item.priority).icon, { className: 'h-2.5 w-2.5 mr-1' })}
                 {getPriorityConfig(item.priority).label}
               </Badge>
             </TableCell>
@@ -340,8 +340,8 @@ export function FeaturesTableView({
 
           {/* Purpose */}
           {columnVisibility.purpose && (
-            <TableCell>
-              <div className="text-sm text-muted-foreground line-clamp-2 max-w-xs">
+            <TableCell className="px-3 py-2">
+              <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
                 {item.purpose || 'No description'}
               </div>
             </TableCell>
@@ -349,52 +349,52 @@ export function FeaturesTableView({
 
           {/* Integration */}
           {columnVisibility.integration && (
-            <TableCell>
-              <span className="text-xs text-muted-foreground">See phases</span>
+            <TableCell className="px-3 py-2">
+              <span className="text-[11px] text-muted-foreground">See phases</span>
             </TableCell>
           )}
 
           {/* Tags */}
           {columnVisibility.tags && (
-            <TableCell>
+            <TableCell className="px-3 py-2">
               {item.tags && item.tags.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
                   {item.tags.slice(0, 2).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
+                    <Badge key={tag} variant="secondary" className="px-1.5 py-0.5 text-[10px] font-medium">
                       {tag}
                     </Badge>
                   ))}
                   {item.tags.length > 2 && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px] font-medium">
                       +{item.tags.length - 2}
                     </Badge>
                   )}
                 </div>
               ) : (
-                <span className="text-xs text-muted-foreground">No tags</span>
+                <span className="text-[11px] text-muted-foreground">No tags</span>
               )}
             </TableCell>
           )}
 
           {/* Links */}
           {columnVisibility.links && (
-            <TableCell>
+            <TableCell className="px-3 py-2">
               <LinkManagementModal
                 workItemId={item.id}
                 workItemName={item.name}
                 workspaceId={workspaceId}
                 trigger={
                   item.linkedItemsCount > 0 ? (
-                    <Button variant="ghost" size="sm" className="h-7 px-2">
+                    <Button variant="ghost" size="sm" className="h-6 px-2">
                       <Link2 className="h-3 w-3 mr-1" />
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="px-1 py-0 text-[10px]">
                         {item.linkedItemsCount}
                       </Badge>
                     </Button>
                   ) : (
-                    <Button variant="ghost" size="sm" className="h-7 px-2">
+                    <Button variant="ghost" size="sm" className="h-6 px-2">
                       <Link2 className="h-3 w-3 mr-1" />
-                      <span className="text-xs">Add</span>
+                      <span className="text-[10px]">Add</span>
                     </Button>
                   )
                 }
@@ -404,28 +404,28 @@ export function FeaturesTableView({
 
           {/* Date */}
           {columnVisibility.date && (
-            <TableCell>
-              <div className="text-xs text-muted-foreground">
+            <TableCell className="px-3 py-2">
+              <div className="text-[11px] text-muted-foreground">
                 {new Date(item.created_at).toLocaleDateString()}
               </div>
             </TableCell>
           )}
 
           {/* Actions */}
-          <TableCell className="text-right">
-            <div className="flex items-center justify-end gap-1">
+          <TableCell className="text-right px-3 py-2">
+            <div className="flex items-center justify-end gap-0.5">
               <Link href={`/workspaces/${workspaceId}/features/${item.id}`}>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Eye className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted">
+                  <Eye className="h-3.5 w-3.5" />
                 </Button>
               </Link>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onDelete(item.id)}
-                className="h-8 w-8"
+                className="h-7 w-7 hover:bg-red-50 hover:text-red-600"
               >
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
           </TableCell>
@@ -436,21 +436,21 @@ export function FeaturesTableView({
           timelines.map((timeline) => (
             <TableRow
               key={timeline.id}
-              className="bg-slate-50/30 hover:bg-slate-50/50 border-b border-slate-100"
+              className="h-10 bg-muted/20 hover:bg-muted/30 transition-colors border-b"
             >
               {/* Indented Phase Name */}
-              <TableCell className="font-medium pl-12">
+              <TableCell className="font-medium pl-10 px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-px bg-slate-300" />
+                  <div className="w-4 h-px bg-border" />
                   <Badge
                     variant="outline"
-                    className={`${TIMELINE_PHASE_CONFIG[timeline.timeline as keyof typeof TIMELINE_PHASE_CONFIG].color} text-xs`}
+                    className={`${TIMELINE_PHASE_CONFIG[timeline.timeline as keyof typeof TIMELINE_PHASE_CONFIG].color} px-1.5 py-0.5 text-[10px] font-medium`}
                   >
                     {TIMELINE_PHASE_CONFIG[timeline.timeline as keyof typeof TIMELINE_PHASE_CONFIG].label}
                   </Badge>
                   <Badge
                     variant="outline"
-                    className={`${getDifficultyConfig(timeline.difficulty).color} text-xs`}
+                    className={`${getDifficultyConfig(timeline.difficulty).color} px-1.5 py-0.5 text-[10px] font-medium`}
                   >
                     {getDifficultyConfig(timeline.difficulty).label}
                   </Badge>
@@ -458,37 +458,37 @@ export function FeaturesTableView({
               </TableCell>
 
               {/* Type */}
-              {columnVisibility.type && <TableCell></TableCell>}
+              {columnVisibility.type && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Timeline Description */}
               {columnVisibility.timeline && (
-                <TableCell>
-                  <div className="text-xs text-muted-foreground line-clamp-2">
+                <TableCell className="px-3 py-2">
+                  <div className="text-[11px] text-muted-foreground line-clamp-1">
                     {timeline.description || 'No description'}
                   </div>
                 </TableCell>
               )}
 
               {/* Status - Empty for child rows */}
-              {columnVisibility.status && <TableCell></TableCell>}
+              {columnVisibility.status && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Priority - Empty for child rows */}
-              {columnVisibility.priority && <TableCell></TableCell>}
+              {columnVisibility.priority && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Purpose - Empty for child rows */}
-              {columnVisibility.purpose && <TableCell></TableCell>}
+              {columnVisibility.purpose && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Integration */}
               {columnVisibility.integration && (
-                <TableCell>
+                <TableCell className="px-3 py-2">
                   <div className="space-y-1">
                     {timeline.integration_system && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px] font-medium">
                         {timeline.integration_system}
                       </Badge>
                     )}
                     {timeline.integration_complexity && (
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] text-muted-foreground">
                         {timeline.integration_complexity}
                       </div>
                     )}
@@ -497,16 +497,16 @@ export function FeaturesTableView({
               )}
 
               {/* Tags - Empty for child rows */}
-              {columnVisibility.tags && <TableCell></TableCell>}
+              {columnVisibility.tags && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Links - Empty for child rows */}
-              {columnVisibility.links && <TableCell></TableCell>}
+              {columnVisibility.links && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Date - Empty for child rows */}
-              {columnVisibility.date && <TableCell></TableCell>}
+              {columnVisibility.date && <TableCell className="px-3 py-2"></TableCell>}
 
               {/* Actions - Empty for child rows */}
-              <TableCell></TableCell>
+              <TableCell className="px-3 py-2"></TableCell>
             </TableRow>
           ))}
       </React.Fragment>
@@ -514,25 +514,25 @@ export function FeaturesTableView({
   }
 
   return (
-    <div className="rounded-lg border bg-white overflow-hidden">
+    <div className="rounded-lg border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50 hover:bg-slate-50">
-            <TableHead className="font-semibold">Task</TableHead>
-            {columnVisibility.type && <TableHead className="font-semibold">Type</TableHead>}
+          <TableRow className="h-9 bg-muted/40 hover:bg-muted/40 border-b">
+            <TableHead className="font-semibold text-xs px-3 py-2">Task</TableHead>
+            {columnVisibility.type && <TableHead className="font-semibold text-xs px-3 py-2">Type</TableHead>}
             {columnVisibility.timeline && (
-              <TableHead className="font-semibold">
+              <TableHead className="font-semibold text-xs px-3 py-2">
                 {viewMode === 'collapsed' ? 'Timeline' : 'Timeline / Phase'}
               </TableHead>
             )}
-            {columnVisibility.status && <TableHead className="font-semibold">Status</TableHead>}
-            {columnVisibility.priority && <TableHead className="font-semibold">Priority</TableHead>}
-            {columnVisibility.purpose && <TableHead className="font-semibold">Purpose</TableHead>}
-            {columnVisibility.integration && <TableHead className="font-semibold">Integration</TableHead>}
-            {columnVisibility.tags && <TableHead className="font-semibold">Tags</TableHead>}
-            {columnVisibility.links && <TableHead className="font-semibold">Links</TableHead>}
-            {columnVisibility.date && <TableHead className="font-semibold">Date</TableHead>}
-            <TableHead className="text-right font-semibold">Actions</TableHead>
+            {columnVisibility.status && <TableHead className="font-semibold text-xs px-3 py-2">Status</TableHead>}
+            {columnVisibility.priority && <TableHead className="font-semibold text-xs px-3 py-2">Priority</TableHead>}
+            {columnVisibility.purpose && <TableHead className="font-semibold text-xs px-3 py-2">Purpose</TableHead>}
+            {columnVisibility.integration && <TableHead className="font-semibold text-xs px-3 py-2">Integration</TableHead>}
+            {columnVisibility.tags && <TableHead className="font-semibold text-xs px-3 py-2">Tags</TableHead>}
+            {columnVisibility.links && <TableHead className="font-semibold text-xs px-3 py-2">Links</TableHead>}
+            {columnVisibility.date && <TableHead className="font-semibold text-xs px-3 py-2">Date</TableHead>}
+            <TableHead className="text-right font-semibold text-xs px-3 py-2">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -543,7 +543,7 @@ export function FeaturesTableView({
               )}
             </>
           ) : (
-            <TableRow>
+            <TableRow className="h-32">
               <TableCell
                 colSpan={
                   1 +
@@ -558,11 +558,11 @@ export function FeaturesTableView({
                   (columnVisibility.date ? 1 : 0) +
                   1
                 }
-                className="text-center py-12"
+                className="text-center"
               >
-                <div className="text-6xl mb-4">📋</div>
-                <h3 className="text-lg font-semibold mb-2">No work items found</h3>
-                <p className="text-muted-foreground">
+                <div className="text-4xl mb-3">📋</div>
+                <h3 className="text-sm font-semibold mb-1">No work items found</h3>
+                <p className="text-xs text-muted-foreground">
                   Try adjusting your filters or create a new work item
                 </p>
               </TableCell>

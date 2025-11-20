@@ -133,10 +133,10 @@ export function PhasePermissionBadge({
   const defaultTooltipMessage = isAdmin
     ? `Admin access: You can view, edit, and delete all items in all phases.`
     : permission.can_edit
-    ? `You can view, edit, and delete items in the ${phaseConfig.name} phase.`
-    : permission.can_view
-    ? `You can view items in the ${phaseConfig.name} phase, but cannot edit or delete them. Contact your team admin to request edit access.`
-    : `You don't have access to the ${phaseConfig.name} phase.`
+      ? `You can view, edit, and delete items in the ${phaseConfig.name} phase.`
+      : permission.can_view
+        ? `You can view items in the ${phaseConfig.name} phase, but cannot edit or delete them. Contact your team admin to request edit access.`
+        : `You don't have access to the ${phaseConfig.name} phase.`
 
   const tooltipText = tooltipMessage ?? defaultTooltipMessage
 
@@ -220,7 +220,7 @@ export function AllPhasesPermissionGrid({
             className="flex items-center justify-between p-4 border rounded-lg bg-card"
           >
             <div className="flex items-center gap-3">
-              <div className="text-2xl">{phaseConfig.icon}</div>
+              <phaseConfig.icon className="h-6 w-6" />
               <div>
                 <h4 className="font-medium">{phaseConfig.name}</h4>
                 <p className="text-xs text-muted-foreground">{phaseConfig.description}</p>
@@ -307,10 +307,10 @@ export function PermissionIcon({
   const tooltipMessage = isAdmin
     ? 'Admin access'
     : permission.can_edit
-    ? `Can edit ${phaseConfig.name}`
-    : permission.can_view
-    ? `View only`
-    : 'No access'
+      ? `Can edit ${phaseConfig.name}`
+      : permission.can_view
+        ? `View only`
+        : 'No access'
 
   const icon = <Icon className={cn(sizeClasses[size], colorClass, className)} />
 

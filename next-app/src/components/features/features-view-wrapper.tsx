@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { createClient } from '@/lib/supabase/client'
+import { calculateWorkItemPhase, type WorkspacePhase } from '@/lib/constants/workspace-phases'
 
 interface WorkItem {
   id: string
@@ -44,6 +45,7 @@ interface FeaturesViewWrapperProps {
   timelineItems: TimelineItem[]
   workspaceId: string
   currentUserId: string
+  selectedPhase: WorkspacePhase | null
 }
 
 export function FeaturesViewWrapper({
@@ -51,6 +53,7 @@ export function FeaturesViewWrapper({
   timelineItems,
   workspaceId,
   currentUserId,
+  selectedPhase,
 }: FeaturesViewWrapperProps) {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
@@ -77,6 +80,12 @@ export function FeaturesViewWrapper({
 
   // Apply filters
   const filteredWorkItems = initialWorkItems.filter((item) => {
+    // Phase filter (null = show all phases)
+    if (selectedPhase !== null) {
+      const itemPhase = calculateWorkItemPhase(item)
+      if (itemPhase !== selectedPhase) return false
+    }
+
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()

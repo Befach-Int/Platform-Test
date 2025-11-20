@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useRouter } from 'next/navigation'
-import { Plus, ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Check, AlertCircle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   getPhaseItemTypes,
@@ -31,9 +31,23 @@ import {
   getItemIcon,
   getItemDescription,
   getPhaseHelperText,
+  getBestPhaseForType,
+  isTypeValidForPhase,
   type WorkspacePhase,
+  type WorkItemType,
 } from '@/lib/constants/work-item-types'
 import { TagSelector } from './tag-selector'
+import { PhaseSelect, type PhasePermission } from './phase-select'
+import { usePhasePermissions } from '@/hooks/use-phase-permissions'
+import { WORKSPACE_PHASES } from '@/lib/constants/workspace-phases'
+import {
+  getDefaultPhase,
+  saveRecentPhase,
+  getRecentPhases,
+  validatePhaseSelection,
+  type PhaseContext,
+} from '@/lib/utils/phase-context'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 
 interface CreateFeatureDialogProps {
@@ -48,6 +62,7 @@ interface FormData {
   // Step 1: Parent Feature Details
   name: string
   type: string
+  phase: WorkspacePhase | undefined
   priority: string
   purpose: string
   tags: string[]
@@ -82,15 +97,44 @@ export function CreateFeatureDialog({
   const [showAllTypes, setShowAllTypes] = useState(false)
   const [selectOpen, setSelectOpen] = useState(false)
   const [step, setStep] = useState(1)
+  const [phaseWorkload, setPhaseWorkload] = useState<Record<WorkspacePhase, number>>({} as any)
 
-  // Get available types based on phase and showAllTypes toggle
-  const availableTypes = getPhaseItemTypes(workspacePhase, showAllTypes)
-  const defaultItemType = defaultType && defaultType !== 'all' ? defaultType : availableTypes[0]
+  // Fetch phase permissions
+  const {
+    permissions,
+    canEdit,
+    isLoading: permissionsLoading,
+    isAdmin,
+  } = usePhasePermissions({ workspaceId, teamId })
+
+  // Get user's assigned phases (where they can edit)
+  const userAssignedPhases = WORKSPACE_PHASES
+    .filter((p) => isAdmin || canEdit(p.id))
+    .map((p) => p.id)
+
+  // Calculate smart default phase
+  const getSmartDefaultPhase = (): WorkspacePhase | undefined => {
+    const recentPhases = getRecentPhases(currentUserId, workspaceId)
+
+    const context: PhaseContext = {
+      workspaceId,
+      currentActivePhase: workspacePhase,
+      userAssignedPhases,
+      userRecentPhases: recentPhases,
+    }
+
+    return getDefaultPhase(context) || undefined
+  }
+
+  // Get initial types from workspace phase for initialization
+  const initialTypes = getPhaseItemTypes(workspacePhase, showAllTypes)
+  const initialItemType = defaultType && defaultType !== 'all' ? defaultType : initialTypes[0]
 
   // Consolidated form state
   const [formData, setFormData] = useState<FormData>({
     name: '',
-    type: defaultItemType,
+    type: initialItemType,
+    phase: undefined, // Will be set after permissions load
     priority: 'medium',
     purpose: '',
     tags: [],
@@ -111,8 +155,79 @@ export function CreateFeatureDialog({
     }
   })
 
+  // Get available types based on SELECTED phase (not workspace phase) and showAllTypes toggle
+  const availableTypes = formData.phase
+    ? getPhaseItemTypes(formData.phase, showAllTypes)
+    : getPhaseItemTypes(workspacePhase, showAllTypes)
+
   const router = useRouter()
   const supabase = createClient()
+
+  // Set default phase after permissions load
+  useEffect(() => {
+    if (!permissionsLoading && !formData.phase && userAssignedPhases.length > 0) {
+      const defaultPhase = getSmartDefaultPhase()
+      if (defaultPhase) {
+        setFormData((prev) => ({ ...prev, phase: defaultPhase }))
+      }
+    }
+  }, [permissionsLoading, userAssignedPhases.length])
+
+  // Fetch phase workload for display
+  useEffect(() => {
+    const fetchWorkload = async () => {
+      const { data } = await supabase
+        .from('phase_workload_cache')
+        .select('phase, total_count')
+        .eq('workspace_id', workspaceId)
+
+      if (data) {
+        const workloadMap: Record<WorkspacePhase, number> = {} as any
+        data.forEach((item) => {
+          workloadMap[item.phase as WorkspacePhase] = item.total_count
+        })
+        setPhaseWorkload(workloadMap)
+      }
+    }
+
+    if (open) {
+      fetchWorkload()
+    }
+  }, [open, workspaceId])
+
+  // Bidirectional handlers for phase-type relationship
+  const handlePhaseChange = (newPhase: WorkspacePhase) => {
+    // Update phase
+    setFormData((prev) => {
+      const updatedData = { ...prev, phase: newPhase }
+
+      // Check if current type is valid for new phase
+      if (!isTypeValidForPhase(prev.type as WorkItemType, newPhase) && !showAllTypes) {
+        // Get available types for new phase
+        const newAvailableTypes = getPhaseItemTypes(newPhase, false)
+        // Set to first available type for this phase
+        if (newAvailableTypes.length > 0) {
+          updatedData.type = newAvailableTypes[0]
+        }
+      }
+
+      return updatedData
+    })
+  }
+
+  const handleTypeChange = (newType: string) => {
+    setFormData((prev) => {
+      const updatedData = { ...prev, type: newType }
+
+      // Auto-update phase to best phase for this type (if user has access)
+      const bestPhase = getBestPhaseForType(newType as WorkItemType, userAssignedPhases)
+      if (bestPhase && bestPhase !== prev.phase) {
+        updatedData.phase = bestPhase
+      }
+
+      return updatedData
+    })
+  }
 
   // Validation functions
   const validateStep1 = (): boolean => {
@@ -120,6 +235,14 @@ export function CreateFeatureDialog({
       alert(`${getItemLabel(formData.type)} name is required`)
       return false
     }
+
+    // Validate phase selection
+    const phaseValidation = validatePhaseSelection(formData.phase, userAssignedPhases)
+    if (!phaseValidation.valid) {
+      alert(phaseValidation.error ||'Phase is required')
+      return false
+    }
+
     return true
   }
 
@@ -160,6 +283,11 @@ export function CreateFeatureDialog({
 
       const workItemId = `work_item_${Date.now()}`
 
+      // Validate phase one more time before creation
+      if (!formData.phase) {
+        throw new Error('Phase is required')
+      }
+
       // Create work item
       const { error: workItemError } = await supabase.from('work_items').insert({
         id: workItemId,
@@ -167,6 +295,7 @@ export function CreateFeatureDialog({
         team_id: teamId,
         name: formData.name.trim(),
         type: formData.type,
+        phase: formData.phase, // Explicit phase assignment
         purpose: formData.purpose.trim() || null,
         priority: formData.priority,
         status: 'not_started',
@@ -174,6 +303,9 @@ export function CreateFeatureDialog({
       })
 
       if (workItemError) throw workItemError
+
+      // Save this phase to user's recent phases
+      saveRecentPhase(currentUserId, workspaceId, formData.phase)
 
       // Create timeline items
       const timelineItems = []
@@ -248,9 +380,11 @@ export function CreateFeatureDialog({
       }
 
       // Reset form
+      const resetDefaultPhase = getSmartDefaultPhase()
       setFormData({
         name: '',
         type: defaultItemType,
+        phase: resetDefaultPhase,
         priority: 'medium',
         purpose: '',
         tags: [],
@@ -287,10 +421,21 @@ export function CreateFeatureDialog({
     ? `New ${getItemLabel(defaultType)}`
     : 'New Work Item'
 
+  // Prepare phase permissions for PhaseSelect component
+  const phasePermissions: PhasePermission[] = WORKSPACE_PHASES.map((phase) => ({
+    phase: phase.id,
+    canAssign: isAdmin || canEdit(phase.id),
+    canView: permissions?.[phase.id]?.can_view || false,
+    workloadCount: phaseWorkload[phase.id] || 0,
+  }))
+
+  // Show error if user has no phase permissions at all
+  const hasAnyEditPermission = userAssignedPhases.length > 0
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button disabled={!hasAnyEditPermission && !permissionsLoading}>
           <Plus className="h-4 w-4 mr-2" />
           {buttonLabel}
         </Button>
@@ -313,6 +458,15 @@ export function CreateFeatureDialog({
             {/* STEP 1: Parent Feature Details */}
             {step === 1 && (
               <>
+                {/* No Edit Permission Warning */}
+                {!hasAnyEditPermission && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      You don't have permission to create work items. Contact your team admin to get phase access.
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 <div className="grid gap-2">
                   <Label htmlFor="name">
@@ -327,13 +481,23 @@ export function CreateFeatureDialog({
                   />
                 </div>
 
+                {/* Phase Selection */}
+                <PhaseSelect
+                  value={formData.phase}
+                  onValueChange={handlePhaseChange}
+                  permissions={phasePermissions}
+                  disabled={!hasAnyEditPermission || permissionsLoading}
+                  required
+                  showWorkload
+                />
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="type">Type</Label>
                     <div className="flex items-center gap-2">
                       <Select
                         value={formData.type}
-                        onValueChange={(value) => setFormData({ ...formData, type: value })}
+                        onValueChange={handleTypeChange}
                         open={selectOpen}
                         onOpenChange={setSelectOpen}
                       >

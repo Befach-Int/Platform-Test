@@ -198,7 +198,7 @@ export function PhaseLeadDashboard({ workspaceId }: PhaseLeadDashboardProps) {
                 const phaseConfig = PHASE_CONFIG[item.phase]
                 return (
                   <div key={item.phase} className="flex items-center gap-2">
-                    <span className="text-lg">{phaseConfig.icon}</span>
+                    <phaseConfig.icon className="h-5 w-5" />
                     <span className="font-medium">{phaseConfig.name}:</span>
                     <span>
                       {item.issue === 'no_leads'
@@ -235,7 +235,7 @@ export function PhaseLeadDashboard({ workspaceId }: PhaseLeadDashboardProps) {
                     />
                     <div>
                       <h4 className="font-medium flex items-center gap-2">
-                        {phaseConfig.icon} {phaseConfig.name}
+                        <phaseConfig.icon className="h-4 w-4" /> {phaseConfig.name}
                       </h4>
                       <p className="text-xs text-muted-foreground">
                         {phase.total_members} total member{phase.total_members !== 1 ? 's' : ''}
