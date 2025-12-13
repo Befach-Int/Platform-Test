@@ -115,10 +115,11 @@ export function ProgrammaticExample() {
 
   return (
     <div>
+      {/* Updated 2025-12-13: 'planning' → 'design' in 4-phase system */}
       <Button onClick={() => openEditDialog({
         id: 'work_item_123',
         name: 'Example Item',
-        phase: 'planning',
+        phase: 'design',
         workspace_id: 'workspace_456',
       })}>
         Edit Example Item

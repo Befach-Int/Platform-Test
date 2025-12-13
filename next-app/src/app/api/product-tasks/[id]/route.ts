@@ -41,11 +41,12 @@ export async function GET(
       return NextResponse.json({ error: 'Product task not found' }, { status: 404 })
     }
 
-    // Validate view permission
+    // Validate view permission (build phase for tasks)
+    // Updated 2025-12-13: 'execution' → 'build' in 4-phase system
     await validatePhasePermission({
       workspaceId: task.workspace_id,
       teamId: task.team_id,
-      phase: 'execution',
+      phase: 'build',
       action: 'view',
     })
 
@@ -80,11 +81,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'Product task not found' }, { status: 404 })
     }
 
-    // 2. Validate edit permission
+    // 2. Validate edit permission (build phase for tasks)
+    // Updated 2025-12-13: 'execution' → 'build' in 4-phase system
     await validatePhasePermission({
       workspaceId: currentTask.workspace_id,
       teamId: currentTask.team_id,
-      phase: 'execution',
+      phase: 'build',
       action: 'edit',
     })
 
@@ -201,11 +203,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Product task not found' }, { status: 404 })
     }
 
-    // 2. Validate delete permission
+    // 2. Validate delete permission (build phase for tasks)
+    // Updated 2025-12-13: 'execution' → 'build' in 4-phase system
     await validatePhasePermission({
       workspaceId: task.workspace_id,
       teamId: task.team_id,
-      phase: 'execution',
+      phase: 'build',
       action: 'delete',
     })
 

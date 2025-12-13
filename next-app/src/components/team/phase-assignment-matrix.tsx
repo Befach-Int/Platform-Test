@@ -85,13 +85,12 @@ export function PhaseAssignmentMatrix({
 
   const assignments = assignmentsResponse?.data || []
 
-  // Calculate lead counts per phase
+  // Calculate lead counts per phase (4-phase system)
   const leadCounts: Record<WorkspacePhase, number> = {
-    research: 0,
-    planning: 0,
-    execution: 0,
-    review: 0,
-    complete: 0,
+    design: 0,
+    build: 0,
+    refine: 0,
+    launch: 0,
   }
 
   assignments.forEach((assignment) => {
@@ -106,11 +105,10 @@ export function PhaseAssignmentMatrix({
       const memberAssignments = assignments.filter((a) => a.user_id === member.user_id) || []
 
       const assignmentMap: Record<WorkspacePhase, UserPhaseAssignment | null> = {
-        research: null,
-        planning: null,
-        execution: null,
-        review: null,
-        complete: null,
+        design: null,
+        build: null,
+        refine: null,
+        launch: null,
       }
 
       memberAssignments.forEach((assignment) => {

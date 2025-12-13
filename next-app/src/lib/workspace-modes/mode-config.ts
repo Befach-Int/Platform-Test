@@ -53,14 +53,13 @@ export interface FieldVisibilityConfig {
 export type WorkItemType = 'concept' | 'feature' | 'bug' | 'enhancement'
 
 /**
- * Workspace phases
+ * Workspace phases (4-phase system) - Updated 2025-12-13
+ * - design (was research/planning)
+ * - build (was execution)
+ * - refine (was review)
+ * - launch (was complete)
  */
-export type WorkspacePhase =
-  | 'research'
-  | 'planning'
-  | 'execution'
-  | 'review'
-  | 'complete'
+export type WorkspacePhase = 'design' | 'build' | 'refine' | 'launch'
 
 /**
  * Suggested action for quick actions panel
@@ -130,7 +129,7 @@ export const MODE_EXTENDED_CONFIG: Record<WorkspaceMode, ExtendedModeConfig> = {
   // DEVELOPMENT MODE - Building from scratch
   // -------------------------------------------------------------------------
   development: {
-    defaultPhase: 'planning',
+    defaultPhase: 'design',  // Was 'planning'
     defaultWorkItemType: 'feature',
     visibleFields: {
       essential: ['name', 'type', 'purpose'],
@@ -214,7 +213,7 @@ export const MODE_EXTENDED_CONFIG: Record<WorkspaceMode, ExtendedModeConfig> = {
   // LAUNCH MODE - Racing toward release
   // -------------------------------------------------------------------------
   launch: {
-    defaultPhase: 'execution',
+    defaultPhase: 'build',  // Was 'execution'
     defaultWorkItemType: 'bug',
     visibleFields: {
       essential: ['name', 'type', 'priority', 'status'],
@@ -299,7 +298,7 @@ export const MODE_EXTENDED_CONFIG: Record<WorkspaceMode, ExtendedModeConfig> = {
   // GROWTH MODE - Iterating based on feedback
   // -------------------------------------------------------------------------
   growth: {
-    defaultPhase: 'review',
+    defaultPhase: 'refine',  // Was 'review'
     defaultWorkItemType: 'enhancement',
     visibleFields: {
       essential: ['name', 'type', 'customer_impact'],
@@ -383,7 +382,7 @@ export const MODE_EXTENDED_CONFIG: Record<WorkspaceMode, ExtendedModeConfig> = {
   // MAINTENANCE MODE - Stability and sustainability
   // -------------------------------------------------------------------------
   maintenance: {
-    defaultPhase: 'execution',
+    defaultPhase: 'build',  // Was 'execution'
     defaultWorkItemType: 'bug',
     visibleFields: {
       essential: ['name', 'type', 'priority', 'status'],

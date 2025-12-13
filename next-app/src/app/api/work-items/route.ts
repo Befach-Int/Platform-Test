@@ -41,10 +41,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Validate view permission (all team members have this)
+    // Updated 2025-12-13: Use 'design' as default phase for listing (was 'planning')
     await validatePhasePermission({
       workspaceId,
       teamId,
-      phase: 'planning', // Use planning as default phase for listing
+      phase: 'design', // Use design as default phase for listing
       action: 'view',
     })
 
@@ -97,8 +98,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate which phase this item will be in
+    // Updated 2025-12-13: Default status changed from 'planning' to 'not_started'
+    // Phase is calculated based on status and other fields
     const phase = calculateWorkItemPhase({
-      status: status ?? 'planning',
+      status: status ?? 'not_started',
       has_timeline_breakdown: has_timeline_breakdown ?? false,
       assigned_to: assigned_to ?? null,
       is_mind_map_conversion: is_mind_map_conversion ?? false,
@@ -113,6 +116,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Create work item
+    // Updated 2025-12-13: Also persist the calculated phase and use 'not_started' as default status
     const { data: workItem, error } = await supabase
       .from('work_items')
       .insert({
@@ -121,7 +125,8 @@ export async function POST(req: NextRequest) {
         team_id,
         title,
         description: description ?? null,
-        status: status ?? 'planning',
+        status: status ?? 'not_started',
+        phase, // Persist the calculated phase
         has_timeline_breakdown: has_timeline_breakdown ?? false,
         assigned_to: assigned_to ?? null,
         is_mind_map_conversion: is_mind_map_conversion ?? false,

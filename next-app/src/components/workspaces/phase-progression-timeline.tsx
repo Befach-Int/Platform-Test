@@ -11,58 +11,23 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Circle, Settings } from 'lucide-react'
+import { PHASE_CONFIG, PHASE_ORDER, migratePhase, type WorkspacePhase } from '@/lib/constants/workspace-phases'
 
-const PHASES = [
-  {
-    value: 'research',
-    label: 'Research',
-    description: 'Discovery & validation',
-    color: 'bg-blue-500',
-    icon: '🔍',
-  },
-  {
-    value: 'planning',
-    label: 'Planning',
-    description: 'Detailed planning',
-    color: 'bg-purple-500',
-    icon: '📋',
-  },
-  {
-    value: 'review',
-    label: 'Review',
-    description: 'Stakeholder review',
-    color: 'bg-yellow-500',
-    icon: '💬',
-  },
-  {
-    value: 'execution',
-    label: 'Execution',
-    description: 'Building features',
-    color: 'bg-green-500',
-    icon: '⚡',
-  },
-  {
-    value: 'testing',
-    label: 'Testing',
-    description: 'Quality assurance',
-    color: 'bg-orange-500',
-    icon: '🧪',
-  },
-  {
-    value: 'metrics',
-    label: 'Metrics',
-    description: 'Success measurement',
-    color: 'bg-pink-500',
-    icon: '📊',
-  },
-  {
-    value: 'complete',
-    label: 'Complete',
-    description: 'Project complete',
-    color: 'bg-slate-500',
-    icon: '✅',
-  },
-]
+/**
+ * Phase configuration for timeline display
+ * Updated 2025-12-13: Migrated to 4-phase system
+ * - design (was research/planning)
+ * - build (was execution)
+ * - refine (was review)
+ * - launch (was complete)
+ */
+const PHASES = PHASE_ORDER.map(phase => ({
+  value: phase,
+  label: PHASE_CONFIG[phase].name,
+  description: PHASE_CONFIG[phase].tagline,
+  color: PHASE_CONFIG[phase].bgColor,
+  icon: PHASE_CONFIG[phase].emoji,
+}))
 
 interface PhaseProgressionTimelineProps {
   currentPhase: string
@@ -70,12 +35,20 @@ interface PhaseProgressionTimelineProps {
   completionPercentage: number
 }
 
+/**
+ * Phase progression timeline component
+ * Shows the current phase in the 4-phase lifecycle with visual timeline
+ *
+ * Supports both new and legacy phase values through migration
+ */
 export function PhaseProgressionTimeline({
   currentPhase,
   workspaceId,
   completionPercentage,
 }: PhaseProgressionTimelineProps) {
-  const currentPhaseIndex = PHASES.findIndex((p) => p.value === currentPhase)
+  // Migrate legacy phases to new phases
+  const normalizedPhase = migratePhase(currentPhase)
+  const currentPhaseIndex = PHASES.findIndex((p) => p.value === normalizedPhase)
   const progressPercentage = currentPhaseIndex >= 0
     ? ((currentPhaseIndex + 1) / PHASES.length) * 100
     : 0

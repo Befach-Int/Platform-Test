@@ -26,7 +26,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 interface EditWorkItemDialogProps {
   workItemId: string
   workspaceId: string
-  phase?: WorkspacePhase  // Optional - defaults to 'complete' (all fields visible)
+  phase?: WorkspacePhase  // Optional - defaults to 'launch' (all fields visible)
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
@@ -55,17 +55,18 @@ interface EditWorkItemDialogProps {
  * <EditWorkItemDialog
  *   workItemId="work_item_123"
  *   workspaceId="workspace_456"
- *   phase="planning"
+ *   phase="design"
  *   open={isOpen}
  *   onOpenChange={setIsOpen}
  *   onSuccess={() => console.log('Updated!')}
  * />
  * ```
  */
+// Updated 2025-12-13: 'complete' → 'launch', 'planning' → 'design' in 4-phase system
 export function EditWorkItemDialog({
   workItemId,
   workspaceId,
-  phase = 'complete',  // Default to 'complete' - all fields visible, none locked
+  phase = 'launch',  // Default to 'launch' - all fields visible, none locked
   open,
   onOpenChange,
   onSuccess,

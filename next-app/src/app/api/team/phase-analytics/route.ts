@@ -93,37 +93,34 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate analytics
+    // Updated 2025-12-13: Migrated to 4-phase system
     const leadCounts: Record<WorkspacePhase, number> = {
-      research: 0,
-      planning: 0,
-      execution: 0,
-      review: 0,
-      complete: 0,
+      design: 0,
+      build: 0,
+      refine: 0,
+      launch: 0,
     }
 
     const contributorCounts: Record<WorkspacePhase, number> = {
-      research: 0,
-      planning: 0,
-      execution: 0,
-      review: 0,
-      complete: 0,
+      design: 0,
+      build: 0,
+      refine: 0,
+      launch: 0,
     }
 
     const totalMemberCounts: Record<WorkspacePhase, number> = {
-      research: 0,
-      planning: 0,
-      execution: 0,
-      review: 0,
-      complete: 0,
+      design: 0,
+      build: 0,
+      refine: 0,
+      launch: 0,
     }
 
     // Track leads by phase for detailed breakdown
     const leadsByPhase: Record<WorkspacePhase, any[]> = {
-      research: [],
-      planning: [],
-      execution: [],
-      review: [],
-      complete: [],
+      design: [],
+      build: [],
+      refine: [],
+      launch: [],
     }
 
     // Process assignments

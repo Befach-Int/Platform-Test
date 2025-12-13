@@ -725,11 +725,12 @@ export function WorkItemsTableView({
       </Table>
 
       {/* Edit Work Item Dialog */}
+      {/* Updated 2025-12-13: 'execution' → 'build' in 4-phase system */}
       {selectedWorkItem && (
         <EditWorkItemDialog
           workItemId={selectedWorkItem}
           workspaceId={workspaceId}
-          phase={workspacePhase || 'execution'}  // Default to execution (all fields visible)
+          phase={workspacePhase || 'build'}  // Default to build (all fields visible)
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           onSuccess={() => {

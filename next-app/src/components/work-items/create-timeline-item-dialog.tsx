@@ -51,7 +51,8 @@ export function CreateTimelineItemDialog({
   const [difficulty, setDifficulty] = useState<string>('MEDIUM')
   const [estimatedHours, setEstimatedHours] = useState('')
   const [progress, setProgress] = useState<TimelineProgress>(PROGRESS_STATES.NOT_STARTED)
-  const [lifecycleStatus, setLifecycleStatus] = useState<LifecycleStatus>(LIFECYCLE_STATUSES.PLANNING)
+  // Updated 2025-12-13: 'PLANNING' → 'DESIGN' in 4-phase system
+  const [lifecycleStatus, setLifecycleStatus] = useState<LifecycleStatus>(LIFECYCLE_STATUSES.DESIGN)
 
   const router = useRouter()
   const supabase = createClient()
@@ -103,7 +104,7 @@ export function CreateTimelineItemDialog({
       setDifficulty('MEDIUM')
       setEstimatedHours('')
       setProgress(PROGRESS_STATES.NOT_STARTED)
-      setLifecycleStatus(LIFECYCLE_STATUSES.PLANNING)
+      setLifecycleStatus(LIFECYCLE_STATUSES.DESIGN) // Updated 2025-12-13: PLANNING → DESIGN
       setOpen(false)
 
       // Refresh the page

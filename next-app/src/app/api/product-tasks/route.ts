@@ -43,11 +43,12 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // Validate view permission (execution phase for tasks)
+    // Validate view permission (build phase for tasks)
+    // Updated 2025-12-13: 'execution' → 'build' in 4-phase system
     await validatePhasePermission({
       workspaceId,
       teamId,
-      phase: 'execution',
+      phase: 'build',
       action: 'view',
     })
 
@@ -153,11 +154,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate edit permission for execution phase
+    // Validate edit permission for build phase
+    // Updated 2025-12-13: 'execution' → 'build' in 4-phase system
     const user = await validatePhasePermission({
       workspaceId: workspace_id,
       teamId: team_id,
-      phase: 'execution',
+      phase: 'build',
       action: 'edit',
     })
 

@@ -61,11 +61,12 @@ export async function POST(
       )
     }
 
-    // 4. Validate permission (planning phase for creating work items)
+    // 4. Validate permission (design phase for creating work items)
+    // Updated 2025-12-13: 'planning' → 'design' in 4-phase system
     const user = await validatePhasePermission({
       workspaceId: task.workspace_id,
       teamId: task.team_id,
-      phase: 'planning',
+      phase: 'design',
       action: 'edit',
     })
 
@@ -80,8 +81,9 @@ export async function POST(
         name: task.title,
         purpose: task.description || '',
         type,
-        status: task.status === 'done' ? 'completed' : 'planning',
-        phase: 'planning',
+        // Updated 2025-12-13: 'planning' → 'not_started/design' in 4-phase system
+        status: task.status === 'done' ? 'completed' : 'not_started',
+        phase: 'design',
         priority: task.priority,
         estimated_hours: task.estimated_hours,
         created_by: user.id,

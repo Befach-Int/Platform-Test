@@ -17,7 +17,7 @@
  *   const user = await validatePhasePermission({
  *     workspaceId: 'workspace_123',
  *     teamId: 'team_456',
- *     phase: 'execution',
+ *     phase: 'build',  // Updated 2025-12-13: 4-phase system
  *     action: 'edit',
  *   })
  *
@@ -97,7 +97,7 @@ interface PermissionCheckResult {
  *   const user = await validatePhasePermission({
  *     workspaceId: params.workspaceId,
  *     teamId: params.teamId,
- *     phase: 'execution',
+ *     phase: 'build',  // Updated 2025-12-13: 4-phase system
  *     action: 'edit',
  *   })
  *
@@ -160,7 +160,7 @@ export async function validatePhasePermission({
  *   userId: user.id,
  *   workspaceId: 'workspace_123',
  *   teamId: 'team_456',
- *   phase: 'execution',
+ *   phase: 'build',  // Updated 2025-12-13: 4-phase system
  *   action: 'edit',
  * })
  *
@@ -337,7 +337,7 @@ export async function validateAdminPermission(
     throw new PermissionDeniedError(
       user.id,
       'admin action',
-      'complete', // Dummy phase for admin actions
+      'launch', // Dummy phase for admin actions (updated 2025-12-13: 'complete' → 'launch')
       'This action requires admin or owner privileges'
     )
   }

@@ -15,8 +15,12 @@ export const WORK_ITEM_TYPES = {
 
 export type WorkItemType = typeof WORK_ITEM_TYPES[keyof typeof WORK_ITEM_TYPES]
 
-// Workspace phases (5-phase system)
-export type WorkspacePhase = 'research' | 'planning' | 'execution' | 'review' | 'complete'
+// Workspace phases (4-phase system) - Updated 2025-12-13
+// design (was research/planning), build (was execution), refine (was review), launch (was complete)
+export type WorkspacePhase = 'design' | 'build' | 'refine' | 'launch'
+
+// Legacy phase type for backward compatibility
+export type LegacyWorkspacePhase = 'research' | 'planning' | 'execution' | 'review' | 'complete'
 
 // Item type metadata
 export const ITEM_TYPE_METADATA: Record<WorkItemType, {
@@ -79,12 +83,24 @@ export const TIMELINE_ITEM_STATUSES = PROGRESS_STATES
 export type TimelineItemStatus = TimelineProgress
 
 // ============================================================================
-// LIFECYCLE STATUS (5 states) - Development Lifecycle Phase
-// Formerly called "phase" - renamed to "Status" in UI
-// Used for: tracking where in the development lifecycle (research → complete)
-// This is the NEW "Status" that appears on each MVP/SHORT/LONG timeline item
+// LIFECYCLE STATUS (4 states) - Development Lifecycle Phase
+// Updated 2025-12-13: Migrated from 5 phases to 4 phases
+// - design (was research/planning) - "Shape your approach"
+// - build (was execution) - "Execute with clarity"
+// - refine (was review) - "Validate ideas, sharpen solutions"
+// - launch (was complete) - "Release, measure, evolve"
 // ============================================================================
 export const LIFECYCLE_STATUSES = {
+  DESIGN: 'design',
+  BUILD: 'build',
+  REFINE: 'refine',
+  LAUNCH: 'launch',
+} as const
+
+export type LifecycleStatus = typeof LIFECYCLE_STATUSES[keyof typeof LIFECYCLE_STATUSES]
+
+// Legacy statuses for backward compatibility
+export const LEGACY_LIFECYCLE_STATUSES = {
   RESEARCH: 'research',
   PLANNING: 'planning',
   EXECUTION: 'execution',
@@ -92,48 +108,95 @@ export const LIFECYCLE_STATUSES = {
   COMPLETE: 'complete',
 } as const
 
-export type LifecycleStatus = typeof LIFECYCLE_STATUSES[keyof typeof LIFECYCLE_STATUSES]
-
 // Legacy aliases for backwards compatibility
 export const TIMELINE_ITEM_PHASES = LIFECYCLE_STATUSES
 export type TimelineItemPhase = LifecycleStatus
 
-// Lifecycle Status metadata (shown as "Status" in UI)
+// Lifecycle Status metadata (shown as "Phase" in UI)
 export const LIFECYCLE_STATUS_METADATA: Record<LifecycleStatus, {
+  label: string
+  tagline: string
+  color: string
+  bgColor: string
+  description: string
+  emoji: string
+}> = {
+  design: {
+    label: 'Design',
+    tagline: 'Shape your approach, define your path',
+    color: 'text-violet-700',
+    bgColor: 'bg-violet-100 border-violet-300',
+    description: 'Solution architecture, MVP scoping, timeline breakdown',
+    emoji: '📐',
+  },
+  build: {
+    label: 'Build',
+    tagline: 'Execute with clarity, create with care',
+    color: 'text-emerald-700',
+    bgColor: 'bg-emerald-100 border-emerald-300',
+    description: 'Active development, implementation, progress tracking',
+    emoji: '🔨',
+  },
+  refine: {
+    label: 'Refine',
+    tagline: 'Validate ideas, sharpen solutions',
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-100 border-amber-300',
+    description: 'User testing, feedback collection, bug fixing',
+    emoji: '✨',
+  },
+  launch: {
+    label: 'Launch',
+    tagline: 'Release, measure, and evolve',
+    color: 'text-green-700',
+    bgColor: 'bg-green-100 border-green-300',
+    description: 'Ship to production, metrics collection, retrospectives',
+    emoji: '🚀',
+  },
+}
+
+// Legacy metadata for backward compatibility
+export const LEGACY_LIFECYCLE_STATUS_METADATA: Record<string, {
   label: string
   color: string
   bgColor: string
   description: string
+  migratesTo: LifecycleStatus
 }> = {
   research: {
     label: 'Research',
     color: 'text-indigo-700',
     bgColor: 'bg-indigo-100 border-indigo-300',
     description: 'Investigating requirements and approach',
+    migratesTo: 'design',
   },
   planning: {
     label: 'Planning',
     color: 'text-violet-700',
     bgColor: 'bg-violet-100 border-violet-300',
     description: 'Defining scope and timeline',
+    migratesTo: 'design',
   },
   execution: {
     label: 'Execution',
     color: 'text-emerald-700',
     bgColor: 'bg-emerald-100 border-emerald-300',
     description: 'Active development',
+    migratesTo: 'build',
   },
   review: {
     label: 'Review',
     color: 'text-amber-700',
     bgColor: 'bg-amber-100 border-amber-300',
     description: 'Testing and validation',
+    migratesTo: 'refine',
   },
   complete: {
     label: 'Complete',
     color: 'text-green-700',
     bgColor: 'bg-green-100 border-green-300',
     description: 'Finished',
+    migratesTo: 'launch',
   },
 }
 
@@ -141,24 +204,60 @@ export const LIFECYCLE_STATUS_METADATA: Record<LifecycleStatus, {
 export const PHASE_METADATA = LIFECYCLE_STATUS_METADATA
 
 /**
- * Get lifecycle status label (shown as "Status" in UI)
+ * Get lifecycle status label (shown as "Phase" in UI)
+ * Supports both new and legacy phase values
  */
 export function getLifecycleStatusLabel(status: LifecycleStatus | string): string {
-  return LIFECYCLE_STATUS_METADATA[status as LifecycleStatus]?.label || status
+  // Check new phases first
+  if (status in LIFECYCLE_STATUS_METADATA) {
+    return LIFECYCLE_STATUS_METADATA[status as LifecycleStatus].label
+  }
+  // Check legacy phases
+  if (status in LEGACY_LIFECYCLE_STATUS_METADATA) {
+    return LEGACY_LIFECYCLE_STATUS_METADATA[status].label
+  }
+  return status
 }
 
 /**
  * Get lifecycle status color class
+ * Supports both new and legacy phase values
  */
 export function getLifecycleStatusColor(status: LifecycleStatus | string): string {
-  return LIFECYCLE_STATUS_METADATA[status as LifecycleStatus]?.color || 'text-gray-700'
+  if (status in LIFECYCLE_STATUS_METADATA) {
+    return LIFECYCLE_STATUS_METADATA[status as LifecycleStatus].color
+  }
+  if (status in LEGACY_LIFECYCLE_STATUS_METADATA) {
+    return LEGACY_LIFECYCLE_STATUS_METADATA[status].color
+  }
+  return 'text-gray-700'
 }
 
 /**
  * Get lifecycle status background color class
+ * Supports both new and legacy phase values
  */
 export function getLifecycleStatusBgColor(status: LifecycleStatus | string): string {
-  return LIFECYCLE_STATUS_METADATA[status as LifecycleStatus]?.bgColor || 'bg-gray-100 border-gray-300'
+  if (status in LIFECYCLE_STATUS_METADATA) {
+    return LIFECYCLE_STATUS_METADATA[status as LifecycleStatus].bgColor
+  }
+  if (status in LEGACY_LIFECYCLE_STATUS_METADATA) {
+    return LEGACY_LIFECYCLE_STATUS_METADATA[status].bgColor
+  }
+  return 'bg-gray-100 border-gray-300'
+}
+
+/**
+ * Migrate legacy phase to new phase
+ */
+export function migrateLifecyclePhase(phase: string): LifecycleStatus {
+  if (phase in LIFECYCLE_STATUS_METADATA) {
+    return phase as LifecycleStatus
+  }
+  if (phase in LEGACY_LIFECYCLE_STATUS_METADATA) {
+    return LEGACY_LIFECYCLE_STATUS_METADATA[phase].migratesTo
+  }
+  return 'design' // Default
 }
 
 // Legacy function aliases for backwards compatibility
@@ -309,17 +408,24 @@ export const getStatusColor = getProgressColor
 
 /**
  * Check if field should be visible/editable based on phase
- * Research: Basic fields only (name, purpose, tags)
- * Planning+: All fields (target_release, acceptance_criteria, etc.)
- * Execution+: Planning fields locked, execution fields unlocked
+ *
+ * 4-Phase System (2025-12-13):
+ * - design: Basic fields + Design fields (scope, acceptance criteria)
+ * - build: All fields visible, Design fields locked
+ * - refine: All fields visible, Design fields locked
+ * - launch: All fields visible, all locked (read-only)
  */
-export function isFieldVisibleInPhase(field: string, phase: WorkspacePhase): boolean {
-  // Fields always visible in all phases
+export function isFieldVisibleInPhase(field: string, phase: WorkspacePhase | string): boolean {
+  // Migrate legacy phases
+  const normalizedPhase = migrateLifecyclePhase(phase)
+
+  // Fields always visible in all phases (Group 1: Basic Information)
   const basicFields = ['name', 'purpose', 'tags', 'type']
   if (basicFields.includes(field)) return true
 
-  // Fields visible from Planning phase onwards
-  const planningFields = [
+  // Fields visible from Design phase (Group 2: Design Details)
+  // Design = planning, scoping, architecture
+  const designFields = [
     'target_release',
     'acceptance_criteria',
     'business_value',
@@ -329,20 +435,21 @@ export function isFieldVisibleInPhase(field: string, phase: WorkspacePhase): boo
     'priority',
     'stakeholders',
   ]
-  if (planningFields.includes(field)) {
-    return ['planning', 'execution', 'review', 'complete'].includes(phase)
+  if (designFields.includes(field)) {
+    // Visible in all phases (design, build, refine, launch)
+    return true
   }
 
-  // Fields visible from Execution phase onwards
-  const executionFields = [
+  // Fields visible from Build phase onwards (Group 3: Build Tracking)
+  const buildFields = [
     'actual_start_date',
     'actual_end_date',
     'actual_hours',
     'progress_percent',
     'blockers',
   ]
-  if (executionFields.includes(field)) {
-    return ['execution', 'review', 'complete'].includes(phase)
+  if (buildFields.includes(field)) {
+    return ['build', 'refine', 'launch'].includes(normalizedPhase)
   }
 
   return false
@@ -350,18 +457,33 @@ export function isFieldVisibleInPhase(field: string, phase: WorkspacePhase): boo
 
 /**
  * Check if field should be locked (read-only) based on phase
- * Example: Planning fields locked once in Execution phase
+ *
+ * 4-Phase System:
+ * - design: Nothing locked (all editable)
+ * - build: Design fields LOCKED (can't change scope mid-build)
+ * - refine: Design fields LOCKED
+ * - launch: Everything LOCKED (historical record)
  */
-export function isFieldLockedInPhase(field: string, phase: WorkspacePhase): boolean {
-  // Planning fields lock once in Execution
-  const planningFields = [
+export function isFieldLockedInPhase(field: string, phase: WorkspacePhase | string): boolean {
+  // Migrate legacy phases
+  const normalizedPhase = migrateLifecyclePhase(phase)
+
+  // Design fields lock once in Build phase
+  const designFields = [
     'target_release',
     'acceptance_criteria',
     'business_value',
     'estimated_hours',
+    'customer_impact',
+    'strategic_alignment',
   ]
-  if (planningFields.includes(field)) {
-    return ['execution', 'review', 'complete'].includes(phase)
+  if (designFields.includes(field)) {
+    return ['build', 'refine', 'launch'].includes(normalizedPhase)
+  }
+
+  // All fields locked in Launch phase (historical record)
+  if (normalizedPhase === 'launch') {
+    return true
   }
 
   return false
@@ -397,13 +519,13 @@ export function getConversionTargets(currentType: WorkItemType): WorkItemType[] 
 /**
  * Get phase-appropriate helper text
  */
-export function getPhaseHelperText(phase: WorkspacePhase): string {
-  const phaseHelpers: Record<WorkspacePhase, string> = {
-    research: 'Research phase - All types available, basic fields only',
-    planning: 'Planning phase - All fields unlocked for planning',
-    execution: 'Execution phase - Planning locked, execution tracking enabled',
-    review: 'Review phase - Gather feedback, track completion',
-    complete: 'Complete - All types and fields available',
+export function getPhaseHelperText(phase: WorkspacePhase | string): string {
+  const normalizedPhase = migrateLifecyclePhase(phase)
+  const phaseHelpers: Record<LifecycleStatus, string> = {
+    design: 'Design phase - Shape your approach, define scope and acceptance criteria',
+    build: 'Build phase - Execute with clarity, Design fields locked',
+    refine: 'Refine phase - Validate ideas, gather feedback, polish solutions',
+    launch: 'Launch phase - Ship, measure success, retrospectives',
   }
-  return phaseHelpers[phase] || ''
+  return phaseHelpers[normalizedPhase] || ''
 }
