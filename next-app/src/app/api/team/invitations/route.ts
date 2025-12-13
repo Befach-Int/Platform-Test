@@ -4,13 +4,14 @@ import { z } from 'zod'
 import { randomBytes } from 'crypto'
 
 // Validation schema for creating invitations
+// Updated 2025-12-13: Migrated to 4-phase system
 const createInvitationSchema = z.object({
   team_id: z.string(),
   email: z.string().email(),
   role: z.enum(['admin', 'member']),
   phase_assignments: z.array(z.object({
     workspace_id: z.string(),
-    phase: z.enum(['research', 'planning', 'execution', 'review', 'complete']),
+    phase: z.enum(['design', 'build', 'refine', 'launch']),
     can_edit: z.boolean()
   })).optional()
 })

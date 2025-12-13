@@ -129,6 +129,7 @@ export function CreateWorkItemDialog({
   const getDefaultSkipTimeline = (type: string) => type === WORK_ITEM_TYPES.BUG
 
   // Consolidated form state
+  // Updated 2025-12-13: Migrated to 4-phase system (PLANNING/RESEARCH → DESIGN)
   const [formData, setFormData] = useState<FormData>({
     name: '',
     type: initialItemType,
@@ -140,19 +141,19 @@ export function CreateWorkItemDialog({
       description: '',
       difficulty: 'medium',
       integration: '',
-      status: LIFECYCLE_STATUSES.PLANNING,
+      status: LIFECYCLE_STATUSES.DESIGN,
     },
     short: {
       description: '',
       difficulty: 'medium',
       integration: '',
-      status: LIFECYCLE_STATUSES.RESEARCH,
+      status: LIFECYCLE_STATUSES.DESIGN,
     },
     long: {
       description: '',
       difficulty: 'medium',
       integration: '',
-      status: LIFECYCLE_STATUSES.RESEARCH,
+      status: LIFECYCLE_STATUSES.DESIGN,
     }
   })
 
@@ -322,7 +323,7 @@ export function CreateWorkItemDialog({
         }
       }
 
-      // Reset form
+      // Reset form - Updated 2025-12-13: PLANNING/RESEARCH → DESIGN
       setFormData({
         name: '',
         type: initialItemType,
@@ -334,19 +335,19 @@ export function CreateWorkItemDialog({
           description: '',
           difficulty: 'medium',
           integration: '',
-          status: LIFECYCLE_STATUSES.PLANNING,
+          status: LIFECYCLE_STATUSES.DESIGN,
         },
         short: {
           description: '',
           difficulty: 'medium',
           integration: '',
-          status: LIFECYCLE_STATUSES.RESEARCH,
+          status: LIFECYCLE_STATUSES.DESIGN,
         },
         long: {
           description: '',
           difficulty: 'medium',
           integration: '',
-          status: LIFECYCLE_STATUSES.RESEARCH,
+          status: LIFECYCLE_STATUSES.DESIGN,
         }
       })
       setStep(1)

@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 // Validation schema for creating phase assignments
+// Updated 2025-12-13: Migrated to 4-phase system
 const createPhaseAssignmentSchema = z.object({
   workspace_id: z.string(),
   user_id: z.string(),
-  phase: z.enum(['research', 'planning', 'execution', 'review', 'complete']),
+  phase: z.enum(['design', 'build', 'refine', 'launch']),
   can_edit: z.boolean(),
   notes: z.string().optional()
 })

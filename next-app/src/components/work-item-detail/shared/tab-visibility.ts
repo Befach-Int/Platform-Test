@@ -1,12 +1,18 @@
 /**
  * Phase-Based Tab Visibility Configuration
  *
- * Defines which tabs are visible for each work item phase.
+ * Updated 2025-12-13: Migrated to 4-phase system
+ * - design (was research/planning)
+ * - build (was execution)
+ * - refine (was review)
+ * - launch (was complete)
+ *
  * Uses progressive disclosure - tabs appear as work progresses
- * through the lifecycle: research → planning → execution → review → complete
+ * through the lifecycle: design → build → refine → launch
  */
 
 import type { WorkspacePhase } from '@/lib/constants/workspace-phases'
+import { migratePhase } from '@/lib/constants/workspace-phases'
 import {
   FileText,
   Lightbulb,
@@ -49,17 +55,17 @@ export interface TabConfig {
 /**
  * Complete tab configuration for the 8-tab structure
  *
- * Tab Visibility Matrix:
- * | Tab         | research | planning | execution | review | complete |
- * |-------------|:--------:|:--------:|:---------:|:------:|:--------:|
- * | Summary     | ✓        | ✓        | ✓         | ✓      | ✓        |
- * | Inspiration | ✓        | ✓        | -         | -      | -        |
- * | Resources   | ✓        | ✓        | ✓         | ✓      | ✓        |
- * | Scope       | -        | ✓        | ✓         | ✓      | ✓        |
- * | Tasks       | -        | -        | ✓         | ✓      | ✓        |
- * | Feedback    | -        | -        | ✓         | ✓      | ✓        |
- * | Metrics     | -        | -        | ✓         | ✓      | ✓        |
- * | AI Copilot  | ✓        | ✓        | ✓         | ✓      | ✓        |
+ * Tab Visibility Matrix (4-Phase System):
+ * | Tab         | design | build | refine | launch |
+ * |-------------|:------:|:-----:|:------:|:------:|
+ * | Summary     | ✓      | ✓     | ✓      | ✓      |
+ * | Inspiration | ✓      | -     | -      | -      |
+ * | Resources   | ✓      | ✓     | ✓      | ✓      |
+ * | Scope       | ✓      | ✓     | ✓      | ✓      |
+ * | Tasks       | -      | ✓     | ✓      | ✓      |
+ * | Feedback    | -      | ✓     | ✓      | ✓      |
+ * | Metrics     | -      | ✓     | ✓      | ✓      |
+ * | AI Copilot  | ✓      | ✓     | ✓      | ✓      |
  */
 export const TAB_CONFIG: TabConfig[] = [
   {
@@ -67,49 +73,49 @@ export const TAB_CONFIG: TabConfig[] = [
     label: 'Summary',
     icon: FileText,
     description: 'Overview, status, and health indicators',
-    visibleInPhases: ['research', 'planning', 'execution', 'review', 'complete'],
+    visibleInPhases: ['design', 'build', 'refine', 'launch'],
   },
   {
     id: 'inspiration',
     label: 'Inspiration',
     icon: Lightbulb,
     description: 'Research links, competitor analysis, user quotes',
-    visibleInPhases: ['research', 'planning'],
+    visibleInPhases: ['design'], // Only in Design phase
   },
   {
     id: 'resources',
     label: 'Resources',
     icon: Link2,
     description: 'Figma, GitHub, docs, API specs',
-    visibleInPhases: ['research', 'planning', 'execution', 'review', 'complete'],
+    visibleInPhases: ['design', 'build', 'refine', 'launch'],
   },
   {
     id: 'scope',
     label: 'Scope',
     icon: Target,
     description: 'Timeline breakdown: MVP, Short-term, Long-term',
-    visibleInPhases: ['planning', 'execution', 'review', 'complete'],
+    visibleInPhases: ['design', 'build', 'refine', 'launch'],
   },
   {
     id: 'tasks',
     label: 'Tasks',
     icon: CheckSquare,
     description: 'Execution checklist and task tracking',
-    visibleInPhases: ['execution', 'review', 'complete'],
+    visibleInPhases: ['build', 'refine', 'launch'],
   },
   {
     id: 'feedback',
     label: 'Feedback',
     icon: MessageSquare,
     description: 'User feedback and stakeholder input',
-    visibleInPhases: ['execution', 'review', 'complete'],
+    visibleInPhases: ['build', 'refine', 'launch'],
   },
   {
     id: 'metrics',
     label: 'Metrics',
     icon: BarChart3,
     description: 'Performance tracking and analytics',
-    visibleInPhases: ['execution', 'review', 'complete'],
+    visibleInPhases: ['build', 'refine', 'launch'],
     isPro: true,
   },
   {
@@ -117,24 +123,28 @@ export const TAB_CONFIG: TabConfig[] = [
     label: 'AI Copilot',
     icon: Bot,
     description: 'Context-aware AI assistant',
-    visibleInPhases: ['research', 'planning', 'execution', 'review', 'complete'],
+    visibleInPhases: ['design', 'build', 'refine', 'launch'],
     isPro: true,
   },
 ]
 
 /**
  * Get visible tabs for a given phase
+ * Supports both new and legacy phase values
  */
-export function getVisibleTabs(phase: WorkspacePhase): TabConfig[] {
-  return TAB_CONFIG.filter((tab) => tab.visibleInPhases.includes(phase))
+export function getVisibleTabs(phase: WorkspacePhase | string): TabConfig[] {
+  const normalizedPhase = migratePhase(phase)
+  return TAB_CONFIG.filter((tab) => tab.visibleInPhases.includes(normalizedPhase))
 }
 
 /**
  * Check if a specific tab is visible in the given phase
+ * Supports both new and legacy phase values
  */
-export function isTabVisible(tabId: DetailTab, phase: WorkspacePhase): boolean {
+export function isTabVisible(tabId: DetailTab, phase: WorkspacePhase | string): boolean {
+  const normalizedPhase = migratePhase(phase)
   const tab = TAB_CONFIG.find((t) => t.id === tabId)
-  return tab ? tab.visibleInPhases.includes(phase) : false
+  return tab ? tab.visibleInPhases.includes(normalizedPhase) : false
 }
 
 /**
@@ -154,7 +164,8 @@ export function getTabConfig(tabId: DetailTab): TabConfig | undefined {
 
 /**
  * Get total count of visible tabs for a phase
+ * Supports both new and legacy phase values
  */
-export function getVisibleTabCount(phase: WorkspacePhase): number {
+export function getVisibleTabCount(phase: WorkspacePhase | string): number {
   return getVisibleTabs(phase).length
 }

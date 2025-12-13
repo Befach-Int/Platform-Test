@@ -9,7 +9,7 @@ import { WorkspacePhase } from '@/lib/constants/work-item-types'
 interface WorkItemEditButtonProps {
   workItemId: string
   workspaceId: string
-  phase?: WorkspacePhase  // Optional - defaults to 'complete' (all fields visible)
+  phase?: WorkspacePhase  // Optional - defaults to 'launch' (all fields visible)
 }
 
 /**
@@ -26,10 +26,11 @@ interface WorkItemEditButtonProps {
  * />
  * ```
  */
+// Updated 2025-12-13: 'complete' → 'launch' in 4-phase system
 export function WorkItemEditButton({
   workItemId,
   workspaceId,
-  phase = 'complete',  // Default to 'complete' - all fields visible
+  phase = 'launch',  // Default to 'launch' - all fields visible
 }: WorkItemEditButtonProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
 

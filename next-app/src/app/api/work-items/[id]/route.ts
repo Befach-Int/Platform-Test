@@ -12,7 +12,8 @@ import {
   handlePermissionError,
   logPermissionDenial,
 } from '@/lib/middleware/permission-middleware'
-import { calculateWorkItemPhase } from '@/lib/constants/workspace-phases'
+import { calculateWorkItemPhase, isValidPhaseTransition, migratePhase } from '@/lib/constants/workspace-phases'
+import type { WorkspacePhase } from '@/lib/constants/workspace-phases'
 
 /**
  * GET /api/work-items/[id]
@@ -98,7 +99,19 @@ export async function PATCH(
       action: 'edit',
     })
 
-    // 4. Prepare update data (merge with current values)
+    // 4. Validate input fields
+    // progress_percent must be 0-100 if provided
+    if (body.progress_percent !== undefined) {
+      const progress = Number(body.progress_percent)
+      if (isNaN(progress) || progress < 0 || progress > 100) {
+        return NextResponse.json(
+          { error: 'progress_percent must be between 0 and 100' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // 5. Prepare update data (merge with current values)
     const updateData: any = {
       updated_at: new Date().toISOString(),
     }
@@ -131,7 +144,49 @@ export async function PATCH(
     if (body.assigned_to !== undefined) updateData.assigned_to = body.assigned_to
     if (body.is_mind_map_conversion !== undefined) updateData.is_mind_map_conversion = body.is_mind_map_conversion
 
-    // 5. Update work item
+    // 6. Recalculate phase if relevant fields changed
+    // Updated 2025-12-13: Always recalculate phase based on merged data
+    const mergedItem = {
+      ...currentItem,
+      ...updateData,
+      status: updateData.status ?? currentItem.status,
+      has_timeline_breakdown: updateData.has_timeline_breakdown ?? currentItem.has_timeline_breakdown,
+      assigned_to: updateData.assigned_to ?? currentItem.assigned_to,
+      is_mind_map_conversion: updateData.is_mind_map_conversion ?? currentItem.is_mind_map_conversion,
+      progress_percent: updateData.progress_percent ?? currentItem.progress_percent,
+      actual_start_date: updateData.actual_start_date ?? currentItem.actual_start_date,
+    }
+
+    const newPhase = calculateWorkItemPhase(mergedItem)
+
+    // 7. Validate phase transition if phase would change
+    if (newPhase !== currentPhase) {
+      // Validate transition is forward-only (or same phase)
+      const migratedCurrentPhase = migratePhase(currentPhase)
+      if (!isValidPhaseTransition(migratedCurrentPhase, newPhase)) {
+        return NextResponse.json(
+          {
+            error: `Invalid phase transition from ${migratedCurrentPhase} to ${newPhase}. Phase can only move forward.`,
+            current_phase: migratedCurrentPhase,
+            attempted_phase: newPhase,
+          },
+          { status: 400 }
+        )
+      }
+
+      // Validate permission for new phase
+      await validatePhasePermission({
+        workspaceId: currentItem.workspace_id,
+        teamId: currentItem.team_id,
+        phase: newPhase,
+        action: 'edit',
+      })
+
+      // Update phase
+      updateData.phase = newPhase
+    }
+
+    // 8. Update work item
     const { data: updatedItem, error: updateError } = await supabase
       .from('work_items')
       .update(updateData)

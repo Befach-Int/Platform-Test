@@ -31,11 +31,12 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // Validate view permission
+    // Validate view permission (build phase for tasks)
+    // Updated 2025-12-13: 'execution' → 'build' in 4-phase system
     await validatePhasePermission({
       workspaceId,
       teamId,
-      phase: 'execution',
+      phase: 'build',
       action: 'view',
     })
 

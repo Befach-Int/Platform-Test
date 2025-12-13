@@ -169,11 +169,12 @@ export function WorkItemsViewWrapper({
         )}
 
         {/* Table View */}
+        {/* Updated 2025-12-13: 'research' → 'design' in 4-phase system */}
         <WorkItemsTableView
           workItems={filteredWorkItems}
           timelineItems={timelineItems}
           workspaceId={workspaceId}
-          workspacePhase={selectedPhase || 'research'}
+          workspacePhase={selectedPhase || 'design'}
           onDelete={setDeletingId}
           viewMode={viewMode}
           columnVisibility={columnVisibility}

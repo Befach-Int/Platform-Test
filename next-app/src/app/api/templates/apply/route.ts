@@ -195,6 +195,7 @@ export async function POST(req: NextRequest) {
           departmentId = departmentMap[item.department]
         }
 
+        // Updated 2025-12-13: 'planning' → 'design' in 4-phase system
         const { error: itemError } = await supabase.from('work_items').insert({
           id: workItemId,
           team_id: workspace.team_id,
@@ -203,8 +204,8 @@ export async function POST(req: NextRequest) {
           type: item.type || 'feature',
           purpose: item.purpose || '',
           priority: item.priority || 'medium',
-          phase: 'planning',
-          status: 'open',
+          phase: 'design',
+          status: 'not_started',
           department_id: departmentId,
           created_by: user.id,
         })

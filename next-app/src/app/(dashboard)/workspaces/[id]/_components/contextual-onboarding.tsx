@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lightbulb, Map, FileText, Calendar, GitBranch, MessageSquare, BarChart3 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { PHASE_CONFIG } from '@/lib/constants/workspace-phases';
+import { PHASE_CONFIG, type WorkspacePhase } from '@/lib/constants/workspace-phases';
 import { cn } from '@/lib/utils';
 
 interface OnboardingState {
@@ -30,18 +30,21 @@ interface GuidanceAction {
   comingSoon?: boolean;
 }
 
+// Updated 2025-12-13: Migrated to 4-phase system
 interface Guidance {
-  phase: 'research' | 'planning' | 'execution' | 'review' | 'complete';
+  phase: WorkspacePhase; // design | build | refine | launch
   title: string;
   actions: GuidanceAction[];
   tip: string | null;
 }
 
+// Updated 2025-12-13: Migrated to 4-phase system
+// Mapping: research/planning → design, execution → build, review → refine, complete → launch
 function getContextualGuidance(state: OnboardingState): Guidance {
-  // No work items at all → Research phase guidance
+  // No work items at all → Design phase guidance (was research)
   if (!state.hasWorkItems && !state.hasMindMaps) {
     return {
-      phase: 'research',
+      phase: 'design',
       title: 'Start brainstorming',
       actions: [
         { icon: Map, label: 'Create Mind Map', view: 'mind-map', primary: true },
@@ -51,10 +54,10 @@ function getContextualGuidance(state: OnboardingState): Guidance {
     };
   }
 
-  // Has mind maps but few work items → Planning phase guidance
+  // Has mind maps but few work items → Design phase guidance (was planning)
   if (state.hasMindMaps && state.hasWorkItems && !state.hasTimeline) {
     return {
-      phase: 'planning',
+      phase: 'design',
       title: 'Structure your features',
       actions: [
         { icon: FileText, label: 'View Features', view: 'features', primary: true },
@@ -64,10 +67,10 @@ function getContextualGuidance(state: OnboardingState): Guidance {
     };
   }
 
-  // Has timeline but no dependencies → Planning phase guidance
+  // Has timeline but no dependencies → Design phase guidance (was planning)
   if (state.hasTimeline && !state.hasDependencies) {
     return {
-      phase: 'planning',
+      phase: 'design',
       title: 'Map dependencies',
       actions: [
         { icon: GitBranch, label: 'Add Dependencies', view: 'dependencies', primary: true },
@@ -77,10 +80,10 @@ function getContextualGuidance(state: OnboardingState): Guidance {
     };
   }
 
-  // Active work in progress → Execution phase guidance
+  // Active work in progress → Build phase guidance (was execution)
   if (state.completionPercentage > 0 && state.completionPercentage < 75) {
     return {
-      phase: 'execution',
+      phase: 'build',
       title: 'Track progress',
       actions: [
         { icon: Calendar, label: 'View Timeline', view: 'timeline', primary: true },
@@ -90,10 +93,10 @@ function getContextualGuidance(state: OnboardingState): Guidance {
     };
   }
 
-  // Near completion → Review phase guidance
+  // Near completion → Refine phase guidance (was review)
   if (state.completionPercentage >= 75) {
     return {
-      phase: 'review',
+      phase: 'refine',
       title: 'Finalize and review',
       actions: [
         { icon: MessageSquare, label: 'Get Feedback', view: 'review', comingSoon: true },
@@ -103,10 +106,10 @@ function getContextualGuidance(state: OnboardingState): Guidance {
     };
   }
 
-  // Has all basics → Execution phase guidance
+  // Has all basics → Build phase guidance (was execution)
   if (state.hasWorkItems && state.hasTimeline && state.hasDependencies) {
     return {
-      phase: 'execution',
+      phase: 'build',
       title: 'Execute your plan',
       actions: [
         { icon: Calendar, label: 'View Timeline', view: 'timeline', primary: true },
@@ -116,9 +119,9 @@ function getContextualGuidance(state: OnboardingState): Guidance {
     };
   }
 
-  // Default fallback
+  // Default fallback → Design phase (was planning)
   return {
-    phase: 'planning',
+    phase: 'design',
     title: 'Quick actions',
     actions: [
       { icon: FileText, label: 'Features', view: 'features', primary: true },

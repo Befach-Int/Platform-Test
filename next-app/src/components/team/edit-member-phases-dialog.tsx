@@ -16,10 +16,11 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, AlertTriangle, Crown, Shield, User } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { PHASE_CONFIG, type WorkspacePhase } from '@/lib/constants/workspace-phases'
+import { PHASE_CONFIG, PHASE_ORDER, type WorkspacePhase } from '@/lib/constants/workspace-phases'
 import type { TeamMemberWithPhases } from '@/lib/types/team'
 
-const PHASES: WorkspacePhase[] = ['research', 'planning', 'execution', 'review', 'complete']
+// Use PHASE_ORDER from constants (4-phase system: design, build, refine, launch)
+const PHASES = PHASE_ORDER
 
 interface PhaseAssignmentState {
   assigned: boolean

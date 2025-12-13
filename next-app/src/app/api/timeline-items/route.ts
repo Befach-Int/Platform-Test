@@ -159,10 +159,11 @@ export async function POST(request: Request) {
     }
 
     // Validate phase if provided
-    const validPhases = ['research', 'planning', 'execution', 'review', 'complete']
+    // Updated 2025-12-13: Migrated to 4-phase system
+    const validPhases = ['design', 'build', 'refine', 'launch']
     if (phase && !validPhases.includes(phase)) {
       return NextResponse.json(
-        { error: 'phase must be one of: research, planning, execution, review, complete' },
+        { error: 'phase must be one of: design, build, refine, launch' },
         { status: 400 }
       )
     }
@@ -200,7 +201,7 @@ export async function POST(request: Request) {
       planned_end_date: planned_end_date || null,
       assigned_to: assigned_to || null,
       status: status || 'not_started',
-      phase: phase || 'planning',
+      phase: phase || 'design', // Updated 2025-12-13: Default to 'design' (was 'planning')
       progress_percent: 0,
       is_blocked: false,
       blockers: [],

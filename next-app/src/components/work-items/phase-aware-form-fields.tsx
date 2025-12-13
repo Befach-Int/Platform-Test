@@ -33,23 +33,29 @@ interface PhaseAwareFormFieldsProps {
 /**
  * Phase-aware form fields that adapt based on workspace phase
  *
+ * Updated 2025-12-13: Migrated to 4-phase system
+ * - design (was research/planning)
+ * - build (was execution)
+ * - refine (was review)
+ * - launch (was complete)
+ *
  * Features:
  * - Progressive disclosure: Only shows fields relevant to current phase
- * - Field locking: Planning fields become read-only in Execution phase
+ * - Field locking: Design fields become read-only from Build phase onwards
  * - Visual indicators: Lock icons for locked fields
  * - Validation: Uses phase-aware Zod schema
  *
  * Phase Progression:
- * - Research: name, purpose, type, tags (basic fields only)
- * - Planning: + target_release, acceptance_criteria, business_value, etc.
- * - Execution: + actual dates, hours, progress tracking (planning fields locked)
- * - Review/Complete: All fields visible
+ * - Design: name, purpose, type, tags (basic fields) + design details
+ * - Build: + actual dates, hours, progress tracking (design fields locked)
+ * - Refine: All fields visible (design fields locked)
+ * - Launch: All fields visible (all fields locked - historical record)
  *
  * @example
  * ```tsx
  * const form = useForm({ resolver: zodResolver(getWorkItemSchema(phase)) })
  * <Form {...form}>
- *   <PhaseAwareFormFields form={form} phase="planning" />
+ *   <PhaseAwareFormFields form={form} phase="design" />
  * </Form>
  * ```
  */
@@ -148,31 +154,31 @@ export function PhaseAwareFormFields({
         />
       </div>
 
-      {/* Planning Fields - Visible from Planning phase onwards */}
-      {fieldGroups.planning.visible && (
+      {/* Design Fields - Visible from Design phase onwards */}
+      {fieldGroups.design.visible && (
         <div className="space-y-4 pt-6 border-t">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold">Planning Details</h3>
-              {fieldGroups.planning.locked && (
+              <h3 className="text-sm font-semibold">Design Details</h3>
+              {fieldGroups.design.locked && (
                 <Badge variant="secondary" className="text-xs">
                   🔒 Locked
                 </Badge>
               )}
             </div>
-            {!fieldGroups.planning.locked && (
+            {!fieldGroups.design.locked && (
               <Badge variant="outline" className="text-xs">
                 Available in {phase} phase
               </Badge>
             )}
           </div>
 
-          {fieldGroups.planning.locked && (
+          {fieldGroups.design.locked && (
             <div className="flex items-start gap-2 p-3 bg-muted rounded-md text-sm text-muted-foreground">
               <Info className="h-4 w-4 mt-0.5 shrink-0" />
               <p>
-                Planning fields are locked in {phase} phase to maintain
-                consistency during execution and review.
+                Design fields are locked in {phase} phase to maintain
+                consistency during build and refinement.
               </p>
             </div>
           )}
@@ -346,11 +352,11 @@ export function PhaseAwareFormFields({
         </div>
       )}
 
-      {/* Execution Fields - Visible from Execution phase onwards */}
-      {fieldGroups.execution.visible && (
+      {/* Build Fields - Visible from Build phase onwards */}
+      {fieldGroups.build.visible && (
         <div className="space-y-4 pt-6 border-t">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold">Execution Tracking</h3>
+            <h3 className="text-sm font-semibold">Build Tracking</h3>
             <Badge variant="outline" className="text-xs">
               Available in {phase} phase
             </Badge>
