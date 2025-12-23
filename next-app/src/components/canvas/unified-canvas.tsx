@@ -179,7 +179,7 @@ function workItemsToNodes(workItems: WorkItem[]): Node[] {
     data: {
       label: item.name,
       type: item.type,
-      status: item.status,
+      status: item.phase,  // phase IS the status for work items
       priority: item.priority,
       isNote: item.is_note,
       noteType: item.note_type,
