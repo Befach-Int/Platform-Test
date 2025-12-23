@@ -118,7 +118,7 @@ export function ConceptWorkflowPanel() {
       console.error('Phase transition error:', error)
       toast({
         title: 'Update failed',
-        description: error instanceof Error ? error.message : 'Could not update concept phase',
+        description: 'Could not update concept phase. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -166,7 +166,7 @@ export function ConceptWorkflowPanel() {
       console.error('Rejection error:', error)
       toast({
         title: 'Rejection failed',
-        description: error instanceof Error ? error.message : 'Could not reject concept',
+        description: 'Could not reject concept. Please try again.',
         variant: 'destructive',
       })
     } finally {

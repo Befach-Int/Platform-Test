@@ -140,15 +140,35 @@ export async function PATCH(
       }
     }
 
-    // Validate concept phase transitions
-    if (currentItem.type === 'concept' && body.status !== undefined) {
+    // Validate rejection_reason length (10-5000 characters)
+    if (body.rejection_reason !== undefined && body.rejection_reason !== null) {
+      const reasonLength = body.rejection_reason.trim().length
+      if (reasonLength > 0 && reasonLength < 10) {
+        return NextResponse.json(
+          { error: 'Rejection reason must be at least 10 characters' },
+          { status: 400 }
+        )
+      }
+      if (reasonLength > 5000) {
+        return NextResponse.json(
+          { error: 'Rejection reason cannot exceed 5000 characters' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate concept phase transitions (if type is concept and phase is changing)
+    if (currentItem.type === 'concept' && body.phase !== undefined && body.phase !== currentItem.phase) {
       const { canTransitionConcept } = await import('@/lib/concept/workflow')
-      const currentConceptPhase = currentItem.status as 'ideation' | 'research' | 'validated' | 'rejected'
-      const targetConceptPhase = body.status as 'ideation' | 'research' | 'validated' | 'rejected'
+      const currentConceptPhase = currentItem.phase as any
+      const targetConceptPhase = body.phase as any
 
       if (!canTransitionConcept(currentConceptPhase, targetConceptPhase)) {
         return NextResponse.json(
-          { error: `Invalid concept phase transition from ${currentConceptPhase} to ${targetConceptPhase}` },
+          {
+            error: 'Invalid concept phase transition',
+            allowed_transitions: ['ideation→research', 'research→validated/rejected', 'any→rejected'],
+          },
           { status: 400 }
         )
       }
@@ -188,8 +208,12 @@ export async function PATCH(
     if (body.is_mind_map_conversion !== undefined) updateData.is_mind_map_conversion = body.is_mind_map_conversion
 
     // Concept workflow fields
+    if (body.phase !== undefined) updateData.phase = body.phase
+    if (body.metadata !== undefined) updateData.metadata = body.metadata
     if (body.rejection_reason !== undefined) updateData.rejection_reason = body.rejection_reason
     if (body.archived !== undefined) updateData.archived = body.archived
+    if (body.review_enabled !== undefined) updateData.review_enabled = body.review_enabled
+    if (body.review_status !== undefined) updateData.review_status = body.review_status
 
     // 6. Recalculate phase if relevant fields changed
     // Updated 2025-12-13: Always recalculate phase based on merged data
