@@ -78,6 +78,19 @@ export function useWorkItemVersions({
 
       const supabase = createClient()
 
+      // First, fetch the current work item to get team_id for security filtering
+      const { data: currentItem, error: currentError } = await supabase
+        .from('work_items')
+        .select('id, team_id, enhances_work_item_id')
+        .eq('id', workItemId)
+        .single()
+
+      if (currentError || !currentItem?.team_id) {
+        throw new Error('Could not determine team context for version history')
+      }
+
+      const teamId = currentItem.team_id
+
       // Find the original work item ID (root of the version chain)
       let originalId = workItemId
 
@@ -90,6 +103,7 @@ export function useWorkItemVersions({
             .from('work_items')
             .select('id, enhances_work_item_id')
             .eq('id', currentParent)
+            .eq('team_id', teamId) // Security: filter by team_id
             .single()
 
           if (parent?.enhances_work_item_id) {
@@ -105,6 +119,7 @@ export function useWorkItemVersions({
       const { data: versions, error: versionsError } = await supabase
         .from('work_items')
         .select('id, name, version, phase, created_at, is_enhancement, enhances_work_item_id, version_notes')
+        .eq('team_id', teamId) // Security: filter by team_id
         .or(`id.eq.${originalId},enhances_work_item_id.eq.${originalId}`)
         .order('version', { ascending: true })
 
@@ -120,6 +135,7 @@ export function useWorkItemVersions({
         const { data: childEnhancements } = await supabase
           .from('work_items')
           .select('id, name, version, phase, created_at, is_enhancement, enhances_work_item_id, version_notes')
+          .eq('team_id', teamId) // Security: filter by team_id
           .in('enhances_work_item_id', chainIds)
           .order('version', { ascending: true })
 

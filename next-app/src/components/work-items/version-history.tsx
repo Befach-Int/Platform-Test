@@ -215,6 +215,25 @@ function CreateVersionDialog({
         body: JSON.stringify({ version_notes: versionNotes }),
       })
 
+      // Handle specific error responses
+      if (response.status === 403) {
+        toast({
+          title: 'Access denied',
+          description: 'You do not have permission to create versions for this work item',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      if (response.status === 404) {
+        toast({
+          title: 'Work item not found',
+          description: 'The work item you are trying to enhance no longer exists',
+          variant: 'destructive',
+        })
+        return
+      }
+
       const result = await response.json()
 
       if (!response.ok) {
