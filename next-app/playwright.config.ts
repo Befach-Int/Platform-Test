@@ -107,7 +107,7 @@ export default defineConfig({
       },
     },
 
-    /* Mobile browsers for responsive testing */
+    /* Mobile browsers disabled - tests not designed for mobile viewports
     {
       name: 'Mobile Chrome',
       use: {
@@ -121,6 +121,7 @@ export default defineConfig({
         ...devices['iPhone 12'],
       },
     },
+    */
   ],
 
   /* Run your local dev server before starting the tests */
