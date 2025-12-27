@@ -68,7 +68,14 @@ export function DashboardView({
   // Calculate stats - Use 'phase' field (phase IS the status for work items)
   const totalWorkItems = workItems?.length || 0;
   const completedWorkItems = workItems?.filter((item) => item.phase === 'launch' || item.phase === 'verified' || item.phase === 'validated').length || 0;
-  const inProgressWorkItems = workItems?.filter((item) => item.phase === 'build' || item.phase === 'fixing').length || 0;
+  const inProgressWorkItems = workItems?.filter((item) =>
+    // Feature/Enhancement phases (not 'launch' which is complete)
+    item.phase === 'design' || item.phase === 'build' || item.phase === 'refine' ||
+    // Bug phases (not 'verified' which is complete)
+    item.phase === 'triage' || item.phase === 'investigating' || item.phase === 'fixing' ||
+    // Concept phases (not 'validated'/'rejected' which are terminal)
+    item.phase === 'ideation' || item.phase === 'research'
+  ).length || 0;
   const completionPercentage = totalWorkItems > 0
     ? Math.round((completedWorkItems / totalWorkItems) * 100)
     : 0;
