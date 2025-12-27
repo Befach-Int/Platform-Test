@@ -87,7 +87,7 @@ export function TimelineView({
         department_id: item.department_id,
         // Convert string department to object if needed
         department: typeof item.department === 'string'
-          ? { id: item.department_id || item.department, name: item.department, color: '#gray', icon: '' }
+          ? { id: item.department_id || item.department, name: item.department, color: '#64748b', icon: '' }
           : item.department,
       };
     });

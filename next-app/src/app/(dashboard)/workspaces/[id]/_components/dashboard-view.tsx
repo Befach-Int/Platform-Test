@@ -59,6 +59,7 @@ interface DashboardViewProps {
 
 export function DashboardView({
   workspace,
+  team: _team,
   workItems,
   teamSize,
   phaseDistribution,
