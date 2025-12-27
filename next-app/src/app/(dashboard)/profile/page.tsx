@@ -79,34 +79,39 @@ export default async function ProfilePage() {
           <CardHeader>
             <CardTitle>Team Memberships</CardTitle>
             <CardDescription>
-              Teams you're a part of and your role in each
+              Teams you&apos;re a part of and your role in each
             </CardDescription>
           </CardHeader>
           <CardContent>
             {teamMemberships && teamMemberships.length > 0 ? (
               <div className="space-y-4">
-                {teamMemberships.map((membership: any) => (
-                  <div
-                    key={membership.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{membership.teams?.name || 'Unknown Team'}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Joined {new Date(membership.joined_at).toLocaleDateString()}
-                      </p>
+                {teamMemberships.map((membership) => {
+                  // Handle Supabase join returning array or single object
+                  const teamsData = membership.teams;
+                  const teamInfo = Array.isArray(teamsData) ? teamsData[0] : teamsData;
+                  return (
+                    <div
+                      key={membership.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{teamInfo?.name || 'Unknown Team'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Joined {new Date(membership.joined_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm capitalize px-3 py-1 bg-secondary rounded-full">
+                          {membership.role}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm capitalize px-3 py-1 bg-secondary rounded-full">
-                        {membership.role}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                You're not a member of any teams yet
+                You&apos;re not a member of any teams yet
               </p>
             )}
           </CardContent>

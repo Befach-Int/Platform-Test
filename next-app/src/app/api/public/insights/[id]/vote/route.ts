@@ -79,7 +79,21 @@ export async function POST(
       )
     }
 
-    const workspace = insight.workspaces as any
+    interface VotingSettings {
+      enabled: boolean
+      requireEmailVerification: boolean
+      allowAnonymous: boolean
+    }
+    interface WorkspaceData {
+      id: string
+      public_feedback_enabled: boolean
+      voting_settings?: VotingSettings
+    }
+    // Handle Supabase returning array or single object for joined data
+    const workspacesData = insight.workspaces
+    const workspace = Array.isArray(workspacesData)
+      ? (workspacesData[0] as WorkspaceData | undefined) || null
+      : (workspacesData as unknown as WorkspaceData | null)
     const votingSettings = workspace?.voting_settings || {
       enabled: true,
       requireEmailVerification: false,
@@ -112,7 +126,7 @@ export async function POST(
 
     // Check for duplicate votes (by email or IP)
     const ipHash = hashIp(clientIp)
-    const voterIdentifier = email || ipHash
+    const _voterIdentifier = email || ipHash
 
     const { data: existingVote } = await supabase
       .from('insight_votes')
@@ -145,7 +159,7 @@ export async function POST(
 
       // Update vote counts on insight
       const oldVote = existingVote.vote_type
-      const { error: countError } = await supabase
+      const { error: _countError } = await supabase
         .from('customer_insights')
         .update({
           upvote_count: oldVote === 'up'
@@ -271,7 +285,7 @@ export async function POST(
       vote_type,
       message: 'Vote recorded',
     }, { headers: rateLimitHeaders })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Public voting error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },

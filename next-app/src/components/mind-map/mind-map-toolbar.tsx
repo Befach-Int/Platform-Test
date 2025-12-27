@@ -6,9 +6,9 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize,
-  Download,
+  
   FileJson,
-  Image,
+  Image as ImageIcon,
   Sparkles,
 } from 'lucide-react'
 
@@ -109,7 +109,7 @@ export function MindMapToolbar({
           className="gap-2"
           title="Export as PNG Image"
         >
-          <Image className="h-4 w-4" />
+          <ImageIcon className="h-4 w-4" />
           <span className="hidden sm:inline">PNG</span>
         </Button>
         <Button

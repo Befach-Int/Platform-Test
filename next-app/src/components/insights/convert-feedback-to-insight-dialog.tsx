@@ -204,10 +204,11 @@ export function ConvertFeedbackToInsightDialog({
       router.refresh()
       onOpenChange(false)
       onSuccess?.(data.data.id)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to convert feedback'
       toast({
         title: 'Error',
-        description: error.message || 'Failed to convert feedback',
+        description: message,
         variant: 'destructive',
       })
     } finally {

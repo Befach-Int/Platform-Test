@@ -116,7 +116,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Track leads by phase for detailed breakdown
-    const leadsByPhase: Record<WorkspacePhase, any[]> = {
+    interface PhaseLeadInfo {
+      user_id: string
+      name: string | null
+      email: string | null
+      assigned_at?: string
+    }
+    const leadsByPhase: Record<WorkspacePhase, PhaseLeadInfo[]> = {
       design: [],
       build: [],
       refine: [],

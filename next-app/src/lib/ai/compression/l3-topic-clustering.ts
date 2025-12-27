@@ -20,9 +20,7 @@ import { createClient } from '@/lib/supabase/server'
 import { embedQuery, formatEmbeddingForPgvector, cosineSimilarity } from '../embeddings/embedding-service'
 import type {
   KnowledgeTopic,
-  KnowledgeTopicInsert,
   TopicCategory,
-  TopicDocument,
 } from '@/lib/types/collective-intelligence'
 
 // =============================================================================
@@ -51,7 +49,7 @@ const TopicClusterSchema = z.object({
     .describe('How important this topic is based on document count and recency (0-1)'),
 })
 
-type GeneratedTopicCluster = z.infer<typeof TopicClusterSchema>
+type _GeneratedTopicCluster = z.infer<typeof TopicClusterSchema>
 
 // =============================================================================
 // CLUSTERING
@@ -99,7 +97,7 @@ export async function clusterTopics(options: ClusterTopicsOptions): Promise<Clus
     const supabase = await createClient()
 
     // Fetch all document summaries with embeddings
-    let query = supabase
+    const query = supabase
       .from('document_summaries')
       .select(`
         id,

@@ -50,7 +50,6 @@ import {
   FileText,
   Rocket,
   Bug,
-  Zap,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { StrategyProgress } from './strategy-progress'
@@ -113,7 +112,6 @@ export function StrategyDetailSheet({
   strategy,
   open,
   onOpenChange,
-  isLoading = false,
   onEdit,
   onDelete,
   onAddChild,
