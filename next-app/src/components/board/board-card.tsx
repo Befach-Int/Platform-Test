@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Calendar, User, Flag } from 'lucide-react'
+import { GripVertical, Calendar, Flag } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -35,7 +35,7 @@ export function BoardCard({
   title,
   description,
   priority,
-  status,
+  status: _status,
   dueDate,
   assignee,
   type,

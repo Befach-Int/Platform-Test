@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Lightbulb, X, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type {
   CustomerInsight,
   InsightFormData,
@@ -219,10 +218,11 @@ export function InsightFormDialog({
       router.refresh()
       onOpenChange(false)
       onSuccess?.(data.data)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} insight`
       toast({
         title: 'Error',
-        description: error.message || `Failed to ${isEditing ? 'update' : 'create'} insight`,
+        description: message,
         variant: 'destructive',
       })
     } finally {

@@ -118,7 +118,7 @@ export function ChatPanel({
   const [inputValue, setInputValue] = useState('')
 
   // Note: AI SDK v5 has different API - using type assertions for compatibility
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const chatHelpers = useChat({
     api: '/api/ai/sdk-chat',
     body: {
@@ -435,7 +435,7 @@ interface LegacyMessage {
  */
 function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === 'user'
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [_isExpanded, _setIsExpanded] = useState(true)
 
   // Cast to legacy message format for v4/v5 compatibility
   const legacyMessage = message as unknown as LegacyMessage

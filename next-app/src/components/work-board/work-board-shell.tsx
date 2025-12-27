@@ -1,7 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect, useRef } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { useMemo, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Keyboard } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,7 +20,6 @@ import { useWorkBoardShortcuts } from './hooks/use-work-board-shortcuts'
 import { KeyboardHelpDialog } from './shared/keyboard-help-dialog'
 
 // Import existing components for views
-import { WorkItemsViewWrapper } from '@/components/work-items/work-items-view-wrapper'
 import { TaskList } from '@/components/product-tasks'
 import { WorkItemsBoardView } from './work-items-view/work-items-board-view'
 import { NestedWorkItemsTable } from './work-items-view/nested-work-items-table'
@@ -88,6 +86,11 @@ interface DummyTask {
   updated_at?: string
   workspace_id?: string
   team_id?: string
+  due_date?: string | null
+  estimated_hours?: number | null
+  actual_hours?: number | null
+  order_index?: number
+  created_by?: string
   [key: string]: unknown
 }
 
@@ -112,8 +115,6 @@ function WorkBoardContent({
   teamMembers = [],
   className,
   dummyTasks = [],
-  userEmail,
-  userName,
 }: WorkBoardShellProps) {
   const { primaryTab, viewMode, filters, clearFilters, hasActiveFilters } = useWorkBoardContext()
   const [addTaskOpen, setAddTaskOpen] = useState(false)
@@ -360,8 +361,8 @@ function WorkItemsContent({
         timeline_phase: (ti.timeline as 'MVP' | 'SHORT' | 'LONG') || 'MVP',
         status: ti.status || parentWorkItem?.status || 'planned',
         priority: parentWorkItem?.priority || undefined,
-        planned_start_date: (ti as any).planned_start_date || undefined,
-        planned_end_date: (ti as any).planned_end_date || undefined,
+        planned_start_date: (ti as { planned_start_date?: string }).planned_start_date || undefined,
+        planned_end_date: (ti as { planned_end_date?: string }).planned_end_date || undefined,
         duration_days: undefined, // Will be calculated
         dependencies: [], // TODO: Wire up linked_items as dependencies
         assignee: parentWorkItem?.owner || undefined,
@@ -424,7 +425,7 @@ function TasksContent({ workspace, viewMode, filters, dummyTasks = [] }: TasksCo
       externalStatusFilter={filters.status as 'todo' | 'in_progress' | 'done' | 'all' || 'all'}
       externalTypeFilter={filters.type as 'research' | 'design' | 'development' | 'qa' | 'marketing' | 'ops' | 'admin' | 'all' || 'all'}
       externalViewMode={viewMode}
-      dummyTasks={dummyTasks as any}
+      dummyTasks={dummyTasks as Parameters<typeof TaskList>[0]['dummyTasks']}
       onWorkItemClick={navigateToWorkItem}
     />
   )

@@ -23,32 +23,34 @@ import { ProblemNode } from './node-types/problem-node'
 import { SolutionNode } from './node-types/solution-node'
 import { FeatureNode } from './node-types/feature-node'
 import { QuestionNode } from './node-types/question-node'
-import { Badge } from '@/components/ui/badge'
+import { Badge as _Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
 
 interface MindMapCanvasProps {
   mindMapId: string
   initialNodes: MindMapReactFlowNode[]
   initialEdges: MindMapReactFlowEdge[]
-  onNodesChange?: (nodes: Node<MindMapNodeData>[]) => void
-  onEdgesChange?: (edges: Edge[]) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onNodesChange?: (nodes: any) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onEdgesChange?: (edges: any) => void
   onEditNode?: (nodeId: string) => void
   onDeleteNode?: (nodeId: string) => void
   onConvertNode?: (nodeId: string) => void
   readOnly?: boolean
 }
 
-// Define custom node types
-const nodeTypes: any = {
+// Define custom node types with proper casting for ReactFlow v12+
+const nodeTypes = {
   idea: IdeaNode,
   problem: ProblemNode,
   solution: SolutionNode,
   feature: FeatureNode,
   question: QuestionNode,
-}
+} as NodeTypes
 
 export function MindMapCanvas({
-  mindMapId,
+  mindMapId: _mindMapId,
   initialNodes,
   initialEdges,
   onNodesChange,
@@ -78,9 +80,11 @@ export function MindMapCanvas({
     (connection: Connection) => {
       if (readOnly) return
 
-      const newEdge: any = {
+      const newEdge: Edge = {
         ...connection,
         id: `edge-${Date.now()}`,
+        source: connection.source || '',
+        target: connection.target || '',
         type: 'smoothstep',
         animated: false,
         style: { stroke: '#94a3b8', strokeWidth: 2 },
