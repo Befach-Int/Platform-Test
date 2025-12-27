@@ -10,7 +10,7 @@
   "disabledLabels": [],
   "excludeAuthors": [],
   "ignoreKeywords": "",
-  "ignorePatterns": "greptile.json\n",
+  "ignorePatterns": "greptile.json",
   "includeAuthors": [],
   "summarySection": {
     "included": true,
