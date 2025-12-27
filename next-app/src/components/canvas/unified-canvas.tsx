@@ -25,8 +25,6 @@ import {
   useNodesState,
   useEdgesState,
   OnConnect,
-  OnNodesChange,
-  OnEdgesChange,
   Panel,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -52,7 +50,6 @@ const customStyles = `
 
 import { useElkLayout } from '@/hooks/use-elk-layout'
 import { PerformanceMonitor, PerformanceMetrics } from '@/lib/performance/monitor'
-import { Tables } from '@/lib/supabase/database.types'
 import { cn } from '@/lib/utils'
 import { WorkItemNode } from './nodes/work-item-node'
 import {
@@ -63,13 +60,32 @@ import {
 import { ViewModeSelector } from './view-mode-selector'
 import { Button } from '@/components/ui/button'
 
-type WorkItem = Tables<'work_items'>
-type LinkedItem = {
+/** Work item for canvas (accepts flexible shape with required fields) */
+interface WorkItem {
   id: string
-  source_item_id: string
-  target_item_id: string
-  link_type: string
-  team_id: string
+  name?: string | null
+  type?: string | null
+  phase?: string | null
+  priority?: string | null
+  is_note?: boolean | null
+  note_type?: string | null
+  note_content?: string | null
+  is_placeholder?: boolean | null
+  canvas_position?: unknown
+  [key: string]: unknown
+}
+
+/** Linked item for canvas (normalized fields) */
+interface LinkedItem {
+  id: string
+  source_item_id?: string
+  target_item_id?: string
+  source_id?: string
+  target_id?: string
+  link_type?: string
+  relationship_type?: string
+  team_id?: string
+  [key: string]: unknown
 }
 
 // ========== VIEW MODES ==========
@@ -175,11 +191,11 @@ const nodeTypes: NodeTypes = {
 function workItemsToNodes(workItems: WorkItem[]): Node[] {
   return workItems.map((item) => ({
     id: item.id,
-    type: item.is_note ? 'note' : item.type.toLowerCase(),
-    position: item.canvas_position as { x: number; y: number } ?? { x: 0, y: 0 },
+    type: item.is_note ? 'note' : (item.type || 'feature').toString().toLowerCase(),
+    position: (item.canvas_position as { x: number; y: number }) ?? { x: 0, y: 0 },
     data: {
-      label: item.name,
-      type: item.type,
+      label: item.name || 'Untitled',
+      type: item.type || 'feature',
       status: item.phase,  // phase IS the status for work items
       priority: item.priority,
       isNote: item.is_note,
@@ -197,24 +213,31 @@ function workItemsToNodes(workItems: WorkItem[]): Node[] {
  * Convert linked items to ReactFlow edges
  */
 function linkedItemsToEdges(linkedItems: LinkedItem[]): Edge[] {
-  return linkedItems.map((link) => ({
-    id: link.id,
-    source: link.source_item_id,
-    target: link.target_item_id,
-    type: 'smoothstep',
-    animated: link.link_type === 'blocks' || link.link_type === 'depends_on',
-    label: link.link_type.replace('_', ' '),
-    data: {
-      linkType: link.link_type,
-      link,
-    },
-  }))
+  return linkedItems.map((link) => {
+    // Support both field naming conventions
+    const source = link.source_item_id || link.source_id || ''
+    const target = link.target_item_id || link.target_id || ''
+    const linkType = link.link_type || link.relationship_type || 'relates_to'
+
+    return {
+      id: link.id,
+      source,
+      target,
+      type: 'smoothstep',
+      animated: linkType === 'blocks' || linkType === 'depends_on',
+      label: linkType.replace('_', ' '),
+      data: {
+        linkType,
+        link,
+      },
+    }
+  })
 }
 
 /**
  * Edge color based on link type
  */
-const edgeColors: Record<string, string> = {
+const _edgeColors: Record<string, string> = {
   blocks: '#ef4444', // red
   depends_on: '#f59e0b', // amber
   enables: '#10b981', // green
@@ -226,13 +249,13 @@ const edgeColors: Record<string, string> = {
 }
 
 export function UnifiedCanvas({
-  workspaceId,
-  teamId,
+  workspaceId: _workspaceId,
+  teamId: _teamId,
   workItems,
   linkedItems,
   onWorkItemUpdate,
   onLinkCreate,
-  onLinkDelete,
+  onLinkDelete: _onLinkDelete,
   className,
 }: UnifiedCanvasProps) {
   // Fullscreen state
@@ -277,7 +300,7 @@ export function UnifiedCanvas({
   const [layoutApplied, setLayoutApplied] = useState(false)
 
   // ELK.js layout - only compute for initial nodes, not manual changes
-  const { nodes: layoutedNodes, edges: layoutedEdges, layoutTime, isLayouting } = useElkLayout(
+  const { nodes: layoutedNodes, edges: layoutedEdges, layoutTime: _layoutTime, isLayouting } = useElkLayout(
     initialNodes, // Use initial nodes, not the mutable ones from useNodesState
     viewModeFilteredEdges, // Use view mode filtered edges
     {
@@ -355,6 +378,7 @@ export function UnifiedCanvas({
       monitor.cleanup()
       clearInterval(metricsInterval)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Update graph size when nodes/edges change
@@ -403,16 +427,17 @@ export function UnifiedCanvas({
 
   // Handle node drag end (save position)
   const onNodeDragStop = useCallback(
-    async (_: any, node: Node) => {
+    async (_event: React.MouseEvent, node: Node) => {
       // TODO: Re-enable position saving once RLS policies are configured
       // Temporarily disabled to avoid console errors during testing
       if (false && onWorkItemUpdate) {
         try {
           await onWorkItemUpdate?.({
             id: node.id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- database schema accepts JSON
             canvas_position: node.position as any,
           })
-        } catch (error) {
+        } catch (_error) {
           // Silently fail - RLS policy needs adjustment
         }
       }

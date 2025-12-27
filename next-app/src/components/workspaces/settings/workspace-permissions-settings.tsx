@@ -26,7 +26,19 @@ interface WorkspacePermissionsSettingsProps {
 }
 
 export function WorkspacePermissionsSettings({ workspace, currentUserId }: WorkspacePermissionsSettingsProps) {
-    const [teamMembers, setTeamMembers] = useState<any[]>([])
+    interface TeamMember {
+    id: string
+    user_id: string
+    role: string
+    joined_at: string
+    users: {
+      id: string
+      email: string
+      name: string | null
+      avatar_url: string | null
+    } | null
+  }
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
     const [loadingMembers, setLoadingMembers] = useState(true)
     const [currentUserRole, setCurrentUserRole] = useState<'owner' | 'admin' | 'member'>('member')
     const [phaseMatrixOpen, setPhaseMatrixOpen] = useState(false)
@@ -57,8 +69,10 @@ export function WorkspacePermissionsSettings({ workspace, currentUserId }: Works
                     const membersWithPlaceholder = (basicData || []).map(member => ({
                         ...member,
                         users: {
+                            id: member.user_id,
                             email: member.user_id,
-                            name: null
+                            name: null,
+                            avatar_url: null
                         }
                     }))
 
@@ -74,7 +88,24 @@ export function WorkspacePermissionsSettings({ workspace, currentUserId }: Works
                     return
                 }
 
-                setTeamMembers(data || [])
+                // Normalize users join - Supabase may return array or single object
+                const normalizedData = (data || []).map(member => {
+                    const usersData = member.users
+                    const userInfo = Array.isArray(usersData) ? usersData[0] : usersData
+                    return {
+                        id: member.id,
+                        user_id: member.user_id,
+                        role: member.role,
+                        joined_at: member.joined_at,
+                        users: userInfo ? {
+                            id: member.user_id,
+                            email: userInfo.email || member.user_id,
+                            name: userInfo.name || null,
+                            avatar_url: null
+                        } : null
+                    }
+                })
+                setTeamMembers(normalizedData)
 
                 if (currentUserId) {
                     const currentMember = data?.find(m => m.user_id === currentUserId)

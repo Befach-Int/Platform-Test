@@ -53,7 +53,7 @@ interface TimelineViewProps {
   departments?: Department[]
 }
 
-export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId, currentUserId, departments = [] }: TimelineViewProps) {
+export function TimelineView({ workItems: initialWorkItems, workspaceId: _workspaceId, teamId: _teamId, currentUserId: _currentUserId, departments = [] }: TimelineViewProps) {
   const [workItems, setWorkItems] = useState(initialWorkItems)
   const { toast } = useToast()
 
@@ -238,6 +238,22 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
     return today >= dateRange.start && today <= dateRange.end
   }, [dateRange])
 
+  // Get pixels per day based on zoom level
+  const getPixelsPerDay = useCallback(() => {
+    switch (zoomLevel) {
+      case 'day':
+        return 80
+      case 'week':
+        return 14 // 100px per week / 7 days
+      case 'month':
+        return 4 // 120px per month / 30 days (approx)
+      case 'quarter':
+        return 1.5 // 200px per quarter / ~90 days (approx)
+      default:
+        return 4
+    }
+  }, [zoomLevel])
+
   // Scroll to today
   const handleScrollToToday = useCallback(() => {
     const scrollContainer = scrollContainerRef.current
@@ -256,7 +272,7 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
       left: Math.max(0, centerPosition),
       behavior: 'smooth',
     })
-  }, [timeIntervals])
+  }, [timeIntervals, getPixelsPerDay])
 
   // Calculate position and width for a work item bar
   const getBarStyle = (item: TimelineWorkItem) => {
@@ -314,22 +330,6 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
         return 'border-orange-600'
       default:
         return 'border-gray-300'
-    }
-  }
-
-  // Get pixels per day based on zoom level
-  const getPixelsPerDay = () => {
-    switch (zoomLevel) {
-      case 'day':
-        return 80
-      case 'week':
-        return 14 // 100px per week / 7 days
-      case 'month':
-        return 4 // 120px per month / 30 days (approx)
-      case 'quarter':
-        return 1.5 // 200px per quarter / ~90 days (approx)
-      default:
-        return 4
     }
   }
 
@@ -395,7 +395,7 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
         title: 'Dates updated',
         description: `${item.name} rescheduled by ${Math.abs(daysDelta)} day${Math.abs(daysDelta) > 1 ? 's' : ''}`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Rollback on error
       setWorkItems(prev =>
         prev.map(i =>
@@ -409,9 +409,10 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
         )
       )
 
+      const message = error instanceof Error ? error.message : 'Failed to update dates'
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update dates',
+        description: message,
         variant: 'destructive',
       })
     }
@@ -473,7 +474,7 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
           title: 'Dates updated',
           description: `${item.name} rescheduled by ${Math.abs(daysDelta)} day${Math.abs(daysDelta) > 1 ? 's' : ''}`,
         })
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback
         setWorkItems(prev =>
           prev.map(i =>
@@ -483,9 +484,10 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
           )
         )
 
+        const message = error instanceof Error ? error.message : 'Failed to update dates'
         toast({
           title: 'Error',
-          description: error.message || 'Failed to update dates',
+          description: message,
           variant: 'destructive',
         })
       }
@@ -506,7 +508,8 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
 
     if (!updateField) return
 
-    const oldValue = (item as any)[updateField]
+    type WorkItemWithUpdateFields = TimelineWorkItem & { department_id?: string }
+    const oldValue = (item as WorkItemWithUpdateFields)[updateField as keyof WorkItemWithUpdateFields]
 
     // Optimistic update
     setWorkItems(prev =>
@@ -531,15 +534,16 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
         title: `${groupBy.charAt(0).toUpperCase() + groupBy.slice(1)} updated`,
         description: `${item.name} moved to ${toGroup}`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Rollback
       setWorkItems(prev =>
         prev.map(i => (i.id === itemId ? { ...i, [updateField]: oldValue } : i))
       )
 
+      const message = error instanceof Error ? error.message : `Failed to update ${groupBy}`
       toast({
         title: 'Error',
-        description: error.message || `Failed to update ${groupBy}`,
+        description: message,
         variant: 'destructive',
       })
     }
@@ -686,7 +690,7 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
 
               {/* Group By (Swimlane Mode Only) */}
               {viewMode === 'swimlane' && (
-                <Select value={groupBy} onValueChange={(value: any) => setGroupBy(value)}>
+                <Select value={groupBy} onValueChange={(value: 'status' | 'priority' | 'phase' | 'assignee' | 'department') => setGroupBy(value)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Group by" />
                   </SelectTrigger>
@@ -848,7 +852,7 @@ export function TimelineView({ workItems: initialWorkItems, workspaceId, teamId,
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Unscheduled Items</CardTitle>
-              <CardDescription>These items don't have start/end dates set</CardDescription>
+              <CardDescription>These items don&apos;t have start/end dates set</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

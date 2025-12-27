@@ -3,8 +3,6 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
 import {
   ReactFlow,
-  Node,
-  Edge,
   Controls,
   MiniMap,
   Background,
@@ -55,6 +53,7 @@ import type {
   WorkItemConnection,
   DependencyGraphNode,
   DependencyGraphEdge,
+  ConnectionType,
 } from '@/lib/types/dependencies'
 import type { CriticalPathNode } from '@/lib/algorithms/critical-path'
 import type { Cycle } from '@/lib/algorithms/cycle-detection'
@@ -72,15 +71,17 @@ interface DependencyGraphProps {
   initialConnections: WorkItemConnection[]
 }
 
-// Define custom node types
-const nodeTypes: any = {
-  workItem: WorkItemNode,
-}
+import type { NodeTypes, EdgeTypes } from '@xyflow/react'
 
-// Define custom edge types
-const edgeTypes: any = {
+// Define custom node types with proper casting for ReactFlow v12+
+const nodeTypes = {
+  workItem: WorkItemNode,
+} as NodeTypes
+
+// Define custom edge types with proper casting for ReactFlow v12+
+const edgeTypes = {
   dependency: DependencyEdge,
-}
+} as EdgeTypes
 
 interface AnalysisResult {
   hasCycles: boolean
@@ -97,7 +98,7 @@ interface AnalysisResult {
 
 function DependencyGraphInner({
   workspaceId,
-  teamId,
+  teamId: _teamId,
   initialWorkItems,
   initialConnections,
 }: DependencyGraphProps) {
@@ -251,8 +252,17 @@ function DependencyGraphInner({
     [setEdges]
   )
 
+  /** AI suggestion type for dependency creation */
+  interface AISuggestion {
+    sourceId: string
+    targetId: string
+    connectionType: ConnectionType
+    strength: number
+    reason: string
+  }
+
   // Handle AI suggestion approval
-  const handleApproveAISuggestions = async (suggestions: any[]) => {
+  const handleApproveAISuggestions = async (suggestions: AISuggestion[]) => {
     try {
       // Create connections for all approved suggestions
       await Promise.all(
@@ -272,7 +282,7 @@ function DependencyGraphInner({
         title: 'Dependencies Created',
         description: `Successfully added ${suggestions.length} dependency connection${suggestions.length > 1 ? 's' : ''}`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating dependencies:', error)
       throw error
     }
@@ -310,11 +320,12 @@ function DependencyGraphInner({
           description: `Health Score: ${data.healthScore}/100`,
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Analysis error:', error)
+      const message = error instanceof Error ? error.message : 'Failed to analyze dependencies'
       toast({
         title: 'Analysis Failed',
-        description: error.message || 'Failed to analyze dependencies',
+        description: message,
         variant: 'destructive',
       })
     } finally {
@@ -322,10 +333,16 @@ function DependencyGraphInner({
     }
   }
 
+  /** Cycle fix action structure */
+  interface CycleFix {
+    action: string
+    connectionId?: string
+  }
+
   // Handle cycle fix application
-  const handleApplyFix = async (fix: any) => {
+  const handleApplyFix = async (fix: CycleFix) => {
     try {
-      if (fix.action === 'remove_connection') {
+      if (fix.action === 'remove_connection' && fix.connectionId) {
         await deleteDependency.mutateAsync({
           id: fix.connectionId,
           workspace_id: workspaceId,
@@ -338,10 +355,11 @@ function DependencyGraphInner({
         setTimeout(() => handleAnalyze(), 500)
       }
       // TODO: Handle other fix types (reverse, change type)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to apply fix'
       toast({
         title: 'Fix Failed',
-        description: error.message || 'Failed to apply fix',
+        description: message,
         variant: 'destructive',
       })
     }
@@ -474,7 +492,7 @@ function DependencyGraphInner({
   const exportAsSVG = useCallback(() => {
     try {
       // Get the current viewport
-      const viewport = reactFlowInstance.getViewport()
+      const _viewport = reactFlowInstance.getViewport()
       const bounds = {
         x: Infinity,
         y: Infinity,

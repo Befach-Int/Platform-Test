@@ -48,10 +48,24 @@ export async function GET(
       )
     }
 
+    // Define workspace type for this context
+    interface WorkspaceData {
+      id?: string
+      name?: string
+      icon?: string
+      public_feedback_enabled?: boolean
+      voting_settings?: {
+        enabled?: boolean
+        requireEmailVerification?: boolean
+        allowAnonymous?: boolean
+      }
+    }
+
     // Check if insight is publicly shareable
     if (!insight.public_share_enabled) {
       // Also check if workspace has public feedback enabled
-      const workspace = insight.workspaces as any
+      const workspacesData = insight.workspaces
+      const workspace = (Array.isArray(workspacesData) ? workspacesData[0] : workspacesData) as WorkspaceData
       if (!workspace?.public_feedback_enabled) {
         return NextResponse.json(
           { error: 'This insight is not available for public voting' },
@@ -60,7 +74,8 @@ export async function GET(
       }
     }
 
-    const workspace = insight.workspaces as any
+    const workspacesData = insight.workspaces
+    const workspace = (Array.isArray(workspacesData) ? workspacesData[0] : workspacesData) as WorkspaceData
 
     // Check if voting is enabled
     const votingSettings = workspace?.voting_settings || {
@@ -89,7 +104,7 @@ export async function GET(
         voting_settings: votingSettings,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching public insight:', error)
     return NextResponse.json(
       { error: 'Internal server error' },

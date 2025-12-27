@@ -14,11 +14,41 @@ import { useMemo } from 'react';
 import { TimelineView as CoreTimelineView, TimelineWorkItem } from '@/components/timeline/timeline-view';
 import type { Department } from '@/lib/types/department';
 
+interface WorkspaceData {
+  id: string;
+  name: string;
+  team_id: string;
+}
+
+interface WorkItemData {
+  id: string;
+  name?: string;
+  title?: string;
+  timeline_phase?: string;
+  status?: string;
+  priority?: string;
+  start_date?: string;
+  planned_start_date?: string;
+  end_date?: string;
+  planned_end_date?: string;
+  duration_days?: number;
+  assignee?: string;
+  team?: string;
+  department_id?: string;
+  department?: string;
+}
+
+interface LinkedItemData {
+  source_id: string;
+  target_id: string;
+  link_type?: string;
+}
+
 interface TimelineViewProps {
-  workspace: any;
-  workItems: any[];
-  timelineItems: any[];
-  linkedItems: any[];
+  workspace: WorkspaceData;
+  workItems: WorkItemData[];
+  timelineItems: unknown[];
+  linkedItems: LinkedItemData[];
   departments: Department[];
   currentUserId: string;
 }
@@ -26,7 +56,7 @@ interface TimelineViewProps {
 export function TimelineView({
   workspace,
   workItems,
-  timelineItems,
+  timelineItems: _timelineItems,
   linkedItems,
   departments,
   currentUserId,
@@ -45,7 +75,7 @@ export function TimelineView({
       return {
         id: item.id,
         name: item.name || item.title || 'Untitled',
-        timeline_phase: item.timeline_phase || 'MVP',
+        timeline_phase: (item.timeline_phase || 'MVP') as 'MVP' | 'SHORT' | 'LONG',
         status: item.status || 'planned',
         priority: item.priority,
         planned_start_date: item.start_date || item.planned_start_date,
@@ -55,7 +85,10 @@ export function TimelineView({
         assignee: item.assignee,
         team: item.team,
         department_id: item.department_id,
-        department: item.department,
+        // Convert string department to object if needed
+        department: typeof item.department === 'string'
+          ? { id: item.department_id || item.department, name: item.department, color: '#64748b', icon: '' }
+          : item.department,
       };
     });
   }, [workItems, linkedItems]);
