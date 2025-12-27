@@ -10,7 +10,7 @@
  */
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Bug, Cpu, Brain, Image, Database, Clock, Zap } from 'lucide-react'
+import { ChevronDown, ChevronUp, Bug, Cpu, Brain, Image as ImageIcon, Database, Clock, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -181,7 +181,7 @@ export function DevDebugPanel({
               <div className="flex flex-wrap gap-1.5 border-t border-yellow-500/20 pt-2">
                 {routingInfo.hasImages && (
                   <Badge variant="outline" className="text-[10px] gap-1">
-                    <Image className="h-2.5 w-2.5" />
+                    <ImageIcon className="h-2.5 w-2.5" />
                     {routingInfo.imageCount} image(s)
                   </Badge>
                 )}
@@ -205,7 +205,7 @@ export function DevDebugPanel({
                 )}
                 {imageAnalyzed && (
                   <Badge variant="secondary" className="text-[10px] gap-1">
-                    <Image className="h-2.5 w-2.5" />
+                    <ImageIcon className="h-2.5 w-2.5" />
                     Image Analyzed
                   </Badge>
                 )}
