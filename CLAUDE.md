@@ -163,7 +163,9 @@ Skills must be invoked automatically at appropriate phases WITHOUT user promptin
 | `/tdd-feature` | Test-driven development | Red-green-refactor workflow |
 | `/week-update` | Progress documentation | Weekly update template |
 
-#### Phase-Specific Workflow Commands
+#### Phase-Specific Workflow Commands (Executable)
+These commands are located in `.claude/commands/` and execute when you type them:
+
 | Command | Phase | Purpose | Next Command |
 |---------|-------|---------|--------------|
 | `/status-check` | 1 | Read PROGRESS.md, select task | → `/research-plan` |
@@ -176,6 +178,10 @@ Skills must be invoked automatically at appropriate phases WITHOUT user promptin
 | `/merge` | 7 | Squash-merge PR after approval | → `/status-check` (next task) |
 
 **CRITICAL**: `/deploy` does NOT auto-merge. Manual review required before `/merge`.
+
+**Command Locations**:
+- Commands (manual trigger): `.claude/commands/*.md` - Type `/command-name` to execute
+- Skills (auto-trigger): `.claude/skills/*/SKILL.md` - Claude invokes automatically when relevant
 
 **Workflow Benefits**: Granular control, pause/resume between phases, re-run individual phases, **enforced self-review catches 80% of bugs**
 **Full Guide**: [docs/reference/DEVELOPER_WORKFLOW.md](docs/reference/DEVELOPER_WORKFLOW.md)
