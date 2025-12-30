@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const response = NextResponse.redirect(new URL('/login', request.url))
+
   try {
     const supabase = await createClient()
 
@@ -10,18 +12,24 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('Sign out error:', error)
-      // Still redirect even on error - user intent is to logout
     }
-
-    // Redirect to login page
-    return NextResponse.redirect(new URL('/login', request.url))
   } catch (error) {
     console.error('Sign out failed:', error)
-    // Redirect anyway since user wants to logout
-    return NextResponse.redirect(new URL('/login', request.url))
   }
+
+  // Explicitly clear Supabase auth cookies on the response
+  // This ensures cookies are deleted even if signOut() cookie propagation fails
+  const supabaseCookies = request.cookies
+    .getAll()
+    .filter((cookie) => cookie.name.startsWith('sb-'))
+
+  for (const cookie of supabaseCookies) {
+    response.cookies.delete(cookie.name)
+  }
+
+  return response
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   return GET(request)
 }
