@@ -1,6 +1,6 @@
 # 📚 Project Guidelines & Quick Reference
 
-**Last Updated**: 2025-12-28 <!-- Security Sprint Complete: 12 PRs merged, 67 CodeQL fixes, Next.js 16.1.1, Greptile AI reviews -->
+**Last Updated**: 2025-12-31 <!-- AI Architecture Plan: 6-phase refactor, 38+ tools -> 7 generalized, multi-model orchestration -->
 **Project**: Product Lifecycle Management Platform
 **Tech Stack**: Next.js 16.1.1 + TypeScript + Supabase + Vercel
 **Current Status**: Week 7/12 Complete + Security Sprint (95% overall)
@@ -57,17 +57,20 @@
 6. **[docs/reference/CHANGELOG.md](docs/reference/CHANGELOG.md)** - Migration history, feature tracking
 7. **[docs/planning/NEXT_STEPS.md](docs/planning/NEXT_STEPS.md)** - Immediate actions, priorities, blockers
 
+#### AI Architecture (Dec 2025)
+8. **[docs/implementation/advanced-ai-system/AI_TOOL_ARCHITECTURE.md](docs/implementation/advanced-ai-system/AI_TOOL_ARCHITECTURE.md)** - 6-phase AI refactor: 38+ tools -> 7 generalized, multi-model orchestration, agent memory
+
 #### Postponed Features
-8. **[docs/postponed/README.md](docs/postponed/README.md)** - Postponed features index
-9. **[docs/processes/POSTPONED_FEATURES_PROCESS.md](docs/processes/POSTPONED_FEATURES_PROCESS.md)** - Tracking process
+9. **[docs/postponed/README.md](docs/postponed/README.md)** - Postponed features index
+10. **[docs/processes/POSTPONED_FEATURES_PROCESS.md](docs/processes/POSTPONED_FEATURES_PROCESS.md)** - Tracking process
 
 #### Configuration & Standards
-10. **[docs/planning/RECOMMENDED_AGENTS.md](docs/planning/RECOMMENDED_AGENTS.md)** - Claude agents by phase
-11. **[docs/reference/CODE_PATTERNS.md](docs/reference/CODE_PATTERNS.md)** - TypeScript, Next.js, Supabase patterns
-12. **[docs/reference/MCP_USAGE_GUIDE.md](docs/reference/MCP_USAGE_GUIDE.md)** - MCP usage examples
+11. **[docs/planning/RECOMMENDED_AGENTS.md](docs/planning/RECOMMENDED_AGENTS.md)** - Claude agents by phase
+12. **[docs/reference/CODE_PATTERNS.md](docs/reference/CODE_PATTERNS.md)** - TypeScript, Next.js, Supabase patterns
+13. **[docs/reference/MCP_USAGE_GUIDE.md](docs/reference/MCP_USAGE_GUIDE.md)** - MCP usage examples
 
 #### UI Component Selection
-13. **[docs/reference/SHADCN_REGISTRY_COMPONENT_GUIDE.md](docs/reference/SHADCN_REGISTRY_COMPONENT_GUIDE.md)** - 14 shadcn/ui registries with 1000+ components
+14. **[docs/reference/SHADCN_REGISTRY_COMPONENT_GUIDE.md](docs/reference/SHADCN_REGISTRY_COMPONENT_GUIDE.md)** - 14 shadcn/ui registries with 1000+ components
 
 ### Tech Stack
 ```
@@ -80,10 +83,25 @@ Testing:      Playwright (E2E, Chromium-only CI)
 Code Review:  Greptile (AI-powered PR reviews)
 Payments:     Stripe (Checkout, Subscriptions, Webhooks)
 Email:        Resend (Invitations, notifications)
-AI:           OpenRouter (Kimi K2, DeepSeek V3.2, Grok 4, Claude Haiku 4.5)
+AI:           OpenRouter (GLM 4.7, MiniMax M2.1, Gemini 3 Flash, Kimi K2, DeepSeek V3.2)
 State:        Zustand + React Query
 Deployment:   Vercel (Serverless functions)
 ```
+
+### AI Model Routing (Dec 2025)
+
+| Capability | Primary | Fallback | Tertiary |
+|------------|---------|----------|----------|
+| Strategic Reasoning | GLM 4.7 | DeepSeek V3.2 | Gemini 3 Flash |
+| Agentic Tool Use | GLM 4.7 | Gemini 3 Flash | MiniMax M2.1 |
+| Coding | MiniMax M2.1 | GLM 4.7 | Kimi K2 |
+| Visual Reasoning | Gemini 3 Flash | Grok 4 Fast | GPT-4o |
+| Large Context | Grok 4.1 Fast | Gemini 3 Flash | Kimi K2 |
+| Default Chat | Kimi K2 | GLM 4.7 | MiniMax M2.1 |
+
+**AVOID**: Claude Sonnet models (too costly for this project)
+
+**Full Details**: [AI_TOOL_ARCHITECTURE.md](docs/implementation/advanced-ai-system/AI_TOOL_ARCHITECTURE.md)
 
 ### MCP Servers (3 Active)
 

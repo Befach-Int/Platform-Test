@@ -1,7 +1,50 @@
 # AI Models Configuration (2025 Latest)
 
-**Last Updated**: January 14, 2025
-**Status**: Production-ready with :nitro routing for maximum throughput
+**Last Updated**: December 31, 2025
+**Status**: Production-ready with multi-model orchestration
+
+---
+
+## 🚀 2025 Model Routing Update (December 31, 2025)
+
+### New Models Added
+
+| Model | Provider | Intelligence | Best For |
+|-------|----------|--------------|----------|
+| **GLM 4.7** | Z-AI | 68 | Strategic reasoning, agentic tool use |
+| **MiniMax M2.1** | MiniMax | 64 | Coding, execution |
+| **Gemini 3 Flash** | Google | ~68 | Visual reasoning, multimodal |
+
+### Model Routing Strategy
+
+See [AI_TOOL_ARCHITECTURE.md](../implementation/advanced-ai-system/AI_TOOL_ARCHITECTURE.md) for full routing configuration.
+
+### Key Changes
+
+1. **GLM 4.7 replaces Claude Haiku** for function calling (83% cost reduction)
+2. **3-deep fallback chains** for all capabilities
+3. **4-tier orchestration**: Smart Routing → Escalation → Consensus → Blind Comparison
+4. **Agent memory system** (10k token limit per workspace)
+
+### Fallback Chains
+
+| Capability | Primary | Fallback | Tertiary |
+|------------|---------|----------|----------|
+| Strategic Reasoning | GLM 4.7 | DeepSeek V3.2 | Gemini 3 Flash |
+| Agentic Tool Use | GLM 4.7 | Gemini 3 Flash | MiniMax M2.1 |
+| Coding | MiniMax M2.1 | GLM 4.7 | Kimi K2 |
+| Visual Reasoning | Gemini 3 Flash | Grok 4 Fast | GPT-4o |
+| Large Context | Grok 4.1 Fast | Gemini 3 Flash | Kimi K2 |
+| Default Chat | Kimi K2 | GLM 4.7 | MiniMax M2.1 |
+
+**AVOID**: Claude Sonnet models (too costly)
+
+### Cost Comparison
+
+| Scenario | Before | After | Savings |
+|----------|--------|-------|---------|
+| 50-person team/month | $800 | $200 | **75%** |
+| Cost per seat | ~$16 | ~$4 | **75%** |
 
 ---
 

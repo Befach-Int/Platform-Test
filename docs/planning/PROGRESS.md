@@ -1,6 +1,6 @@
 # Implementation Progress Tracker
 
-**Last Updated**: 2025-12-29
+**Last Updated**: 2025-12-31
 **Project**: Product Lifecycle Management Platform
 **Overall Progress**: ~95% Complete (Week 7 / 8-week timeline)
 **Status**: On Track - Security & Infrastructure Sprint Complete
@@ -948,7 +948,88 @@ Complete phase system architecture decisions documented:
 
 ---
 
-**Next Review Date**: 2025-12-18 (Weekly)
+## AI Tool Architecture Refactor (December 2025)
+
+### Overview
+
+Major AI infrastructure consolidation: 38+ specialized tools → 7 generalized tools with multi-model orchestration, fallback chains, and agent memory.
+
+**Goals:**
+- 75% cost reduction ($800 → $200/month for 50-person team)
+- 25% improvement in tool selection accuracy (72% → 90%)
+- 82% reduction in tool count (38+ → 7)
+
+**Full Documentation**: [AI_TOOL_ARCHITECTURE.md](../implementation/advanced-ai-system/AI_TOOL_ARCHITECTURE.md) - Contains complete implementation steps, code snippets, testing plans, and rollback procedures for all 6 phases.
+
+### Phased Implementation
+
+| Phase | Branch | Scope | Duration | Status |
+|-------|--------|-------|----------|--------|
+| **Phase 1** | `feat/wire-missing-tools` | Wire 10 missing tools in agent-executor.ts | 1-2 hours | 🔄 NEXT |
+| **Phase 2** | `feat/model-routing-config` | Add GLM 4.7, MiniMax M2.1, Gemini 3 Flash | 2-3 hours | ⏳ Pending |
+| **Phase 3** | `feat/generalized-tools` | Consolidate 38 → 7 generalized tools | 1-2 days | ⏳ Pending |
+| **Phase 4** | `feat/orchestration-system` | 4-tier routing, fallback chains, consensus | 1-2 days | ⏳ Pending |
+| **Phase 5** | `feat/agent-memory-system` | Memory UI, 10k token limit, learning | 1-2 days | ⏳ Pending |
+| **Phase 6** | `feat/ux-improvements` | Thinking status, quality toggle, Deep Reasoning | 1 day | ⏳ Pending |
+
+### Phase 1: Wire Missing Tools (NEXT)
+
+**Problem**: 10 of 20 registered tools throw "Execution not implemented" error
+
+| Category | Missing Tools |
+|----------|---------------|
+| Optimization | prioritizeFeatures, balanceWorkload, identifyRisks, suggestTimeline, deduplicateItems |
+| Strategy | alignToStrategy, suggestOKRs, competitiveAnalysis, roadmapGenerator, impactAssessment |
+
+**Solution**: Add passthrough cases to `agent-executor.ts` switch statement (lines 730-758)
+
+**Quick Start**:
+```bash
+git checkout main && git pull origin main
+git checkout -b feat/wire-missing-tools
+# Edit next-app/src/lib/ai/agent-executor.ts (see AI_TOOL_ARCHITECTURE.md for code)
+npx tsc --noEmit && npm run lint
+git add . && git commit -m "feat: wire optimization and strategy tools"
+git push -u origin feat/wire-missing-tools
+gh pr create --title "feat: wire 10 missing tools in agent-executor"
+```
+
+**Testing**: Test each tool with prompts like "Prioritize features using RICE", "Suggest OKRs for this workspace"
+
+### New Model Configuration
+
+| Model | Use For | Cost | Context | Replace |
+|-------|---------|------|---------|---------|
+| **GLM 4.7** | Strategic reasoning + Agentic | $0.40/$1.50 | 128K | Claude Haiku ($5/M) |
+| **MiniMax M2.1** | Coding | $0.30/$1.20 | 128K | N/A (new) |
+| **Gemini 3 Flash** | Visual reasoning | $0.50/$3.00 | 1M | Gemini 2.5 Flash |
+| **Kimi K2** | Default chat | $0.15/$2.50 | 262K | (keep) |
+| **Grok 4.1 Fast** | Large context | $0.20/$0.50 | 1M | (keep) |
+
+### 4-Tier Orchestration System
+
+| Tier | Usage | Purpose | Cost |
+|------|-------|---------|------|
+| Smart Routing | 80% | Single model with fallback chain | 1x |
+| Confidence Escalation | 15% | Query fallback when uncertain (<70%) | 1.3x |
+| Consensus Mode | 5% | 3-4 models parallel for high-stakes | 3-4x |
+| Blind Comparison | 5% sampling | Learning mode for routing optimization | 3-4x |
+
+### The 7 Generalized Tools (Phase 3)
+
+| Tool | Purpose | Replaces |
+|------|---------|----------|
+| **entity** | CRUD for all entities | createWorkItem, createTask, createDependency, createTimelineItem, createInsight |
+| **analyze** | Read-only analysis | analyzeFeedback, suggestDependencies, findGaps, summarizeWorkItem, extractRequirements |
+| **optimize** | Workflow improvement | prioritizeFeatures, balanceWorkload, identifyRisks, suggestTimeline, deduplicateItems |
+| **strategize** | Strategic planning | alignToStrategy, suggestOKRs, competitiveAnalysis, roadmapGenerator, impactAssessment |
+| **research** | Web search & external data | webSearch, extractContent, deepResearch, researchStatus, quickAnswer |
+| **generate** | Content generation | generateUserStories, generateAcceptanceCriteria, estimateEffort (NEW) |
+| **plan** | Sprint/release planning | planSprint, suggestTimeline (NEW) |
+
+---
+
+**Next Review Date**: 2025-12-31 (Weekly)
 
 ---
 
