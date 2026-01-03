@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { notFound } from 'next/navigation'
 import { BlockSuiteEditor, BlockSuiteCanvasEditor, BlockSuitePageEditor } from '@/components/blocksuite'
 import { Button } from '@/components/ui/button'
@@ -21,33 +21,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
  *
  * Access at: /test/blocksuite (development only)
  */
+
+// Check development mode at module level - this is evaluated at build time
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
+
 export default function BlockSuiteTestPage() {
   const [editorReady, setEditorReady] = useState(false)
   const [changeCount, setChangeCount] = useState(0)
   const [currentMode, setCurrentMode] = useState<'page' | 'edgeless'>('edgeless')
-  const [isDevelopment, setIsDevelopment] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    // Check if we're in development mode
-    // This runs client-side to determine access
-    setIsDevelopment(process.env.NODE_ENV === 'development')
-  }, [])
-
-  // Show loading while checking environment
-  if (isDevelopment === null) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            Loading...
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
 
   // Block access in production - show 404
-  if (!isDevelopment) {
+  // This check happens before any renders
+  if (!IS_DEVELOPMENT) {
     notFound()
   }
 
