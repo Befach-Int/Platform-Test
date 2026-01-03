@@ -30,9 +30,9 @@ export const BlockSuiteEditor = dynamic<BlockSuiteEditorProps>(
   () => import('./blocksuite-editor').then((mod) => mod.BlockSuiteEditor),
   {
     ssr: false,
-    loading: ({ isLoading }) => (
-      <LoadingSkeleton mode="edgeless" className={isLoading ? 'animate-pulse' : ''} />
-    ),
+    // Default to edgeless mode for loading skeleton since we can't access props here
+    // Use specific BlockSuitePageEditor or BlockSuiteCanvasEditor for mode-matched loading
+    loading: () => <LoadingSkeleton mode="edgeless" />,
   }
 )
 
@@ -77,6 +77,20 @@ export const BlockSuiteCanvasEditor = dynamic<Omit<BlockSuiteEditorProps, 'mode'
 // Re-export types
 export type { BlockSuiteEditorProps } from './blocksuite-editor'
 export { LoadingSkeleton } from './loading-skeleton'
+
+// Re-export validation schemas
+export {
+  BlockSuiteEditorPropsSchema,
+  MindMapTreeNodeSchema,
+  MindMapLayoutTypeSchema,
+  MindMapStyleSchema,
+  MindMapEditorPropsSchema,
+  DocumentMetadataSchema,
+  BlockSuiteDocumentSchema,
+  validateEditorProps,
+  safeValidateEditorProps,
+} from './schema'
+export type { ValidatedBlockSuiteEditorProps } from './schema'
 
 // Re-export BlockSuite types for convenience
 export type {

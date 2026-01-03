@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { cn } from '@/lib/utils'
+import { safeValidateEditorProps } from './schema'
 
 // Types for BlockSuite modules (dynamically imported)
 type Doc = import('@blocksuite/store').Doc
@@ -15,8 +16,6 @@ export interface BlockSuiteEditorProps {
   onReady?: (doc: Doc) => void
   /** Callback when document content changes */
   onChange?: (doc: Doc) => void
-  /** Initial content to load (Yjs snapshot base64 or JSON) */
-  initialContent?: string
   /** Document ID for persistence */
   documentId?: string
   /** Whether the editor is read-only */
@@ -57,7 +56,6 @@ export function BlockSuiteEditor({
   className,
   onReady,
   onChange,
-  initialContent,
   documentId,
   readOnly = false,
 }: BlockSuiteEditorProps) {
@@ -67,7 +65,19 @@ export function BlockSuiteEditor({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Cleanup function
+  // Validate props at runtime using Zod schema
+  const validationResult = useMemo(() => {
+    return safeValidateEditorProps({
+      mode,
+      className,
+      onReady,
+      onChange,
+      documentId,
+      readOnly,
+    })
+  }, [mode, className, onReady, onChange, documentId, readOnly])
+
+  // Cleanup function - must be before useEffect that uses it
   const cleanup = useCallback(() => {
     if (editorRef.current && containerRef.current) {
       try {
@@ -86,7 +96,11 @@ export function BlockSuiteEditor({
     docRef.current = null
   }, [])
 
+  // Initialize editor effect - only runs if validation passes
   useEffect(() => {
+    // Skip initialization if validation failed
+    if (!validationResult.success) return
+
     let mounted = true
     let disposable: { dispose: () => void } | null = null
 
@@ -183,16 +197,23 @@ export function BlockSuiteEditor({
       }
       cleanup()
     }
-  }, [mode, documentId, readOnly, onReady, onChange, cleanup])
+  }, [mode, documentId, readOnly, onReady, onChange, cleanup, validationResult.success])
 
-  // Handle content updates
-  useEffect(() => {
-    if (initialContent && docRef.current) {
-      // TODO: Implement content loading from Yjs snapshot or JSON
-      // This will be implemented in Phase 4 with the Supabase provider
-      console.log('Initial content provided, loading not yet implemented')
-    }
-  }, [initialContent])
+  // Render validation error - after all hooks
+  if (!validationResult.success) {
+    const errorMessages = validationResult.error.issues
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join(', ')
+
+    return (
+      <div className={cn('flex items-center justify-center h-full min-h-[400px] bg-destructive/10 rounded-lg', className)}>
+        <div className="text-center p-4">
+          <p className="text-destructive font-medium">Invalid Editor Configuration</p>
+          <p className="text-sm text-muted-foreground mt-1">{errorMessages}</p>
+        </div>
+      </div>
+    )
+  }
 
   if (error) {
     return (

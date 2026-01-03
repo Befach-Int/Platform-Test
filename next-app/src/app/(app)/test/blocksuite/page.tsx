@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { notFound } from 'next/navigation'
 import { BlockSuiteEditor, BlockSuiteCanvasEditor, BlockSuitePageEditor } from '@/components/blocksuite'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,23 +10,56 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 /**
  * BlockSuite Editor Test Page
  *
+ * SECURITY: This page is only accessible in development mode.
+ * In production, it returns a 404 to prevent exposure.
+ *
  * This page tests the BlockSuite integration to verify:
  * - SSR-safe dynamic imports work correctly
  * - Editor mounts and initializes properly
  * - Both page and edgeless modes function
  * - Change callbacks fire correctly
  *
- * Access at: /test/blocksuite
+ * Access at: /test/blocksuite (development only)
  */
 export default function BlockSuiteTestPage() {
   const [editorReady, setEditorReady] = useState(false)
   const [changeCount, setChangeCount] = useState(0)
   const [currentMode, setCurrentMode] = useState<'page' | 'edgeless'>('edgeless')
+  const [isDevelopment, setIsDevelopment] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    // Check if we're in development mode
+    // This runs client-side to determine access
+    setIsDevelopment(process.env.NODE_ENV === 'development')
+  }, [])
+
+  // Show loading while checking environment
+  if (isDevelopment === null) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Loading...
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Block access in production - show 404
+  if (!isDevelopment) {
+    notFound()
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">BlockSuite Editor Test</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold">BlockSuite Editor Test</h1>
+          <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded">
+            DEV ONLY
+          </span>
+        </div>
         <p className="text-muted-foreground">
           Testing the BlockSuite React wrapper with SSR-safe dynamic imports
         </p>
@@ -38,7 +72,7 @@ export default function BlockSuiteTestPage() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${editorReady ? 'text-green-600' : 'text-yellow-600'}`}>
-              {editorReady ? '✓ Ready' : '⏳ Loading...'}
+              {editorReady ? 'Ready' : 'Loading...'}
             </div>
           </CardContent>
         </Card>
