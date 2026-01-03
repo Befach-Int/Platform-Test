@@ -130,12 +130,16 @@ export function BlockSuiteEditor({
         const schema = new Schema()
         schema.register(AffineSchemas)
 
-        // Create document collection and doc
+        // Create document collection (workspace container) and doc
+        // Collection ID = workspace identifier, Doc ID = document identifier
+        const collectionId = `collection-${Date.now()}`
+        const docId = documentId || `doc-${Date.now()}`
+
         const collection = new DocCollection({
           schema,
-          id: documentId || `doc-${Date.now()}`,
+          id: collectionId,
         })
-        const doc = collection.createDoc({ id: documentId || `doc-${Date.now()}` })
+        const doc = collection.createDoc({ id: docId })
 
         // Initialize with required root blocks
         doc.load(() => {
