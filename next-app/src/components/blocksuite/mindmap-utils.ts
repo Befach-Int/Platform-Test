@@ -15,12 +15,17 @@ import type {
 /**
  * Convert ReactFlow flat nodes and edges to BlockSuite tree structure
  *
- * ReactFlow uses flat arrays with edges defining relationships.
- * BlockSuite uses a nested tree structure.
+ * ReactFlow uses flat arrays with edges defining relationships (DAG/graph structure).
+ * BlockSuite uses a nested tree structure where each node has exactly ONE parent.
+ *
+ * **Important**: This conversion may lose edge information when multiple edges point
+ * to the same node. BlockSuite trees cannot represent DAG structures - when a node
+ * has multiple incoming edges, only the first parent-child relationship is preserved.
+ * Lost edges are reported in the warnings array.
  *
  * @param nodes - Array of ReactFlow nodes
  * @param edges - Array of edges connecting nodes
- * @returns ConversionResult with tree and any orphaned nodes
+ * @returns ConversionResult with tree, orphaned nodes, and warnings about lost edges
  */
 export function reactFlowToBlockSuiteTree(
   nodes: MindMapNode[],
@@ -36,6 +41,8 @@ export function reactFlowToBlockSuiteTree(
   // Build adjacency map: parent -> children
   const childrenMap = new Map<string, string[]>()
   const hasParent = new Set<string>()
+  // Track all incoming edges per node to detect and report lost edges
+  const incomingEdgesMap = new Map<string, string[]>()
 
   for (const edge of edges) {
     const sourceId = edge.source_node_id
@@ -46,6 +53,12 @@ export function reactFlowToBlockSuiteTree(
     }
     childrenMap.get(sourceId)?.push(targetId)
     hasParent.add(targetId)
+
+    // Track all incoming edges for lost edge detection
+    if (!incomingEdgesMap.has(targetId)) {
+      incomingEdgesMap.set(targetId, [])
+    }
+    incomingEdgesMap.get(targetId)?.push(sourceId)
   }
 
   // Find root nodes (nodes without parents)
@@ -73,30 +86,41 @@ export function reactFlowToBlockSuiteTree(
   }
 
   // Track all processed nodes for orphan detection and deduplication.
+  // Also track which parent each node was assigned to for lost edge reporting.
   //
   // DESIGN DECISION: processedNodes is intentionally GLOBAL across all roots.
   // This is correct because:
   // 1. ReactFlow node IDs are globally unique within a canvas
   // 2. Each node should appear exactly ONCE in the final BlockSuite tree
-  // 3. When multiple roots share child branches (e.g., through edges), we want
-  //    the node to appear under the FIRST root that processes it, not duplicated
-  // 4. Orphan detection needs to track ALL processed nodes to identify truly
-  //    disconnected nodes (not just unprocessed within one root's subtree)
+  // 3. BlockSuite trees cannot represent DAG structures (nodes with multiple parents)
+  // 4. When a node has multiple incoming edges, we assign it to the FIRST parent
+  //    that processes it and report the lost edges as warnings
   //
-  // If roots were meant to be completely independent trees (allowing duplicates),
-  // we would reset this set for each root. But BlockSuite expects a single
-  // combined tree, so deduplication is the correct behavior.
+  // This is the expected behavior for DAG-to-tree conversion. If you need to preserve
+  // all relationships, consider using a different data structure or duplicating nodes.
   const processedNodes = new Set<string>()
+  const assignedParent = new Map<string, string>() // nodeId -> parentId that processed it
 
   // Recursively build tree with cycle detection per traversal
   function buildTree(
     nodeId: string,
+    parentId: string | null,
     depth = 0,
     currentPath = new Set<string>()
   ): BlockSuiteMindmapNodeWithMeta | null {
-    // Skip if already processed (prevents duplicate nodes when roots share children)
-    // This ensures each node appears exactly once in the final combined tree
+    // Skip if already processed - this node is already in the tree under a different parent
     if (processedNodes.has(nodeId)) {
+      // Report lost edge: this parent wanted to connect to this node but can't
+      if (parentId) {
+        const assignedTo = assignedParent.get(nodeId)
+        const nodeName = nodeMap.get(nodeId)?.title || nodeId
+        const parentName = nodeMap.get(parentId)?.title || parentId
+        const assignedParentName = assignedTo ? (nodeMap.get(assignedTo)?.title || assignedTo) : 'root'
+        warnings.push(
+          `Lost edge: "${parentName}" → "${nodeName}" (node already assigned to "${assignedParentName}"). ` +
+          `BlockSuite trees cannot have multiple parents per node.`
+        )
+      }
       return null
     }
 
@@ -121,15 +145,17 @@ export function reactFlowToBlockSuiteTree(
       return null
     }
 
-    // Only mark as processed AFTER validating the node exists
-    // This ensures orphan detection only counts valid, processed nodes
+    // Mark as processed and record the parent that claimed this node
     processedNodes.add(nodeId)
+    if (parentId) {
+      assignedParent.set(nodeId, parentId)
+    }
 
     const children: BlockSuiteMindmapNodeWithMeta[] = []
     const childIds = childrenMap.get(nodeId) || []
 
     for (const childId of childIds) {
-      const childTree = buildTree(childId, depth + 1, pathWithCurrent)
+      const childTree = buildTree(childId, nodeId, depth + 1, pathWithCurrent)
       if (childTree) {
         children.push(childTree)
       }
@@ -159,14 +185,15 @@ export function reactFlowToBlockSuiteTree(
 
   // Build tree from first root node
   const primaryRoot = rootNodes[0]
-  const tree = buildTree(primaryRoot.id)
+  const tree = buildTree(primaryRoot.id, null)
 
   // If we have multiple roots, add them as children of the primary
   if (rootNodes.length > 1 && tree) {
     const additionalRoots: BlockSuiteMindmapNodeWithMeta[] = []
     for (let i = 1; i < rootNodes.length; i++) {
       // Each additional root starts with a fresh path for cycle detection
-      const additionalTree = buildTree(rootNodes[i].id, 0, new Set<string>())
+      // Use primaryRoot.id as the parent for lost edge reporting
+      const additionalTree = buildTree(rootNodes[i].id, primaryRoot.id, 0, new Set<string>())
       if (additionalTree) {
         additionalRoots.push(additionalTree)
       }
@@ -278,16 +305,30 @@ export function semanticNodeToMindmapNode(node: MindMapNode): BlockSuiteMindmapN
 /**
  * Create a simple tree structure from text lines (markdown-like)
  *
+ * Handles missing intermediate indentation levels gracefully by treating
+ * deeply indented lines as direct children when their expected parent level
+ * doesn't exist.
+ *
  * @param text - Multi-line text with indentation representing hierarchy
  * @returns BlockSuiteMindmapNode tree
  *
  * @example
+ * // Standard hierarchy
  * const tree = textToMindmapTree(`
  *   Central Idea
  *     Branch 1
  *       Leaf 1.1
  *     Branch 2
  * `)
+ *
+ * @example
+ * // Missing intermediate level (8 spaces without 4-space parent)
+ * // The deeply indented line becomes a direct child
+ * const tree = textToMindmapTree(`
+ *   Root
+ *           Deep Child
+ * `)
+ * // Result: Root -> Deep Child (flattened)
  */
 export function textToMindmapTree(text: string): BlockSuiteMindmapNode | null {
   const lines = text
@@ -299,12 +340,6 @@ export function textToMindmapTree(text: string): BlockSuiteMindmapNode | null {
     .filter((line) => line.text.length > 0 && line.indent >= 0)
 
   if (lines.length === 0) return null
-
-  // Normalize indentation to use smallest non-zero indent as unit
-  // Use explicit check for Infinity since Math.min(...[]) returns Infinity (which is truthy)
-  const indentedLines = lines.filter((l) => l.indent > 0).map((l) => l.indent)
-  const minIndent = indentedLines.length > 0 ? Math.min(...indentedLines) : 2
-  const indentUnit = Number.isFinite(minIndent) ? minIndent : 2
 
   function buildFromLines(
     startIdx: number,
@@ -325,9 +360,15 @@ export function textToMindmapTree(text: string): BlockSuiteMindmapNode | null {
       const nextLine = lines[idx]
       if (nextLine.indent <= baseIndent) break
 
-      // Only process lines that are exactly one indent level deeper as direct children.
-      // Lines with deeper indentation will be handled recursively by their parent.
-      if (nextLine.indent === baseIndent + indentUnit) {
+      // Process any line with deeper indentation as a child.
+      // This handles both:
+      // 1. Lines exactly one indent level deeper (normal case)
+      // 2. Lines with missing intermediate levels (e.g., 8 spaces when expecting 4)
+      //
+      // For missing intermediate levels, we treat the deeply indented line
+      // as a direct child, which "flattens" the hierarchy but preserves all nodes.
+      // This is better than orphaning nodes silently.
+      if (nextLine.indent > baseIndent) {
         const childResult = buildFromLines(idx, nextLine.indent)
         if (childResult) {
           node.children?.push(childResult.node)
@@ -335,9 +376,6 @@ export function textToMindmapTree(text: string): BlockSuiteMindmapNode | null {
         } else {
           idx++
         }
-      } else if (nextLine.indent > baseIndent + indentUnit) {
-        // Skip deeper nested lines - they'll be processed by their immediate parent
-        idx++
       } else {
         idx++
       }

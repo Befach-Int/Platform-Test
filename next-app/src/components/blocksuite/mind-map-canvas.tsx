@@ -13,6 +13,18 @@ import { DEFAULT_SAMPLE_TREE } from './mindmap-types'
 // Type for BlockSuite Doc (dynamically imported)
 type Doc = import('@blocksuite/store').Doc
 
+// Type for BlockSuite Store with slots (used for ready event)
+interface StoreWithSlots {
+  slots?: {
+    ready?: {
+      subscribe: (callback: () => void) => { unsubscribe: () => void }
+    }
+    blockUpdated?: {
+      subscribe: (callback: (payload: unknown) => void) => { unsubscribe: () => void }
+    }
+  }
+}
+
 /**
  * Safely clears all child nodes from a container element
  * This avoids innerHTML which can be an XSS vector
@@ -83,18 +95,29 @@ function extractMindmapTree(
  *
  * Features:
  * - Native BlockSuite mindmap rendering with auto-layout
- * - 4 built-in visual styles
- * - 3 layout modes (left, right, balanced)
- * - Tree change callbacks
- * - Node selection events
+ * - 4 built-in visual styles (1-4)
+ * - 3 layout modes (0=RIGHT, 1=LEFT, 2=BALANCE)
+ * - Tree change callbacks via onTreeChange
+ * - Node selection events (planned, not yet implemented)
+ *
+ * Limitations:
+ * - **Layout/style props are immutable after creation**: BlockSuite creates the mindmap
+ *   element once with the specified layout and style. To change these properties,
+ *   the component must be unmounted and remounted (e.g., by changing the `key` prop).
+ * - **onNodeSelect not yet implemented**: Node selection requires BlockSuite surface
+ *   element click event integration, which is planned for a future release.
  *
  * @example
  * ```tsx
  * import { MindMapCanvas } from '@/components/blocksuite'
  *
  * function MyMindMap() {
+ *   const [layout, setLayout] = useState(2)
+ *
  *   return (
+ *     // Use key to force remount when layout changes
  *     <MindMapCanvas
+ *       key={`mindmap-${layout}`}
  *       initialTree={{
  *         text: 'Central Idea',
  *         children: [
@@ -103,8 +126,7 @@ function extractMindmapTree(
  *         ]
  *       }}
  *       style={4}  // MindmapStyle.FOUR
- *       layout={2} // LayoutType.BALANCE
- *       onNodeSelect={(id, text) => console.log('Selected:', text)}
+ *       layout={layout} // LayoutType: 0=RIGHT, 1=LEFT, 2=BALANCE
  *     />
  *   )
  * }
@@ -126,6 +148,7 @@ export function MindMapCanvas({
   const editorRef = useRef<unknown>(null)
   const docRef = useRef<Doc | null>(null)
   const mindmapIdRef = useRef<string | null>(null)
+  const hasWarnedAboutNodeSelect = useRef(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -134,9 +157,11 @@ export function MindMapCanvas({
     return initialTree || DEFAULT_SAMPLE_TREE
   }, [initialTree])
 
-  // Warn if onNodeSelect is provided but not yet implemented
+  // Warn ONCE if onNodeSelect is provided but not yet implemented
+  // Using ref to prevent duplicate warnings on re-renders with new callback references
   useEffect(() => {
-    if (onNodeSelect) {
+    if (onNodeSelect && !hasWarnedAboutNodeSelect.current) {
+      hasWarnedAboutNodeSelect.current = true
       console.warn(
         'MindMapCanvas: onNodeSelect prop is not yet implemented. ' +
           'Node selection events will not fire. This feature is planned for a future release.'
@@ -166,7 +191,7 @@ export function MindMapCanvas({
   // Initialize editor effect
   useEffect(() => {
     let mounted = true
-    let disposable: { dispose: () => void } | null = null
+    const subscriptions: Array<{ unsubscribe: () => void }> = []
 
     const initMindMap = async () => {
       if (!containerRef.current) return
@@ -237,21 +262,9 @@ export function MindMapCanvas({
           containerRef.current.appendChild(editor as Node)
           editorRef.current = editor
 
-          // Poll for surface readiness instead of fixed timeout.
-          // BlockSuite doesn't expose a "surface ready" event, so we poll.
-          //
-          // TIMING RATIONALE:
-          // - 10 attempts × 50ms = 500ms max wait
-          // - In testing, surface typically ready within 100-200ms
-          // - 500ms is acceptable for initial load; faster devices succeed earlier
-          // - If this proves insufficient for slower devices, increase MAX_ATTEMPTS
-          //   or make configurable via props (not yet needed based on testing)
-          const MAX_ATTEMPTS = 10
-          const POLL_INTERVAL_MS = 50
-          let attempts = 0
-
-          const tryAddMindmap = () => {
-            if (!mounted || !surfaceId) return
+          // Function to add mindmap once surface is ready
+          const addMindmapToSurface = () => {
+            if (!mounted || !surfaceId) return false
 
             try {
               const surface = doc.getBlockById(surfaceId)
@@ -275,37 +288,73 @@ export function MindMapCanvas({
                 })
 
                 mindmapIdRef.current = mindmapId
-              } else if (attempts < MAX_ATTEMPTS) {
-                // Surface not ready yet, retry
+                return true
+              }
+              return false
+            } catch (e) {
+              console.warn('Failed to add mindmap element:', e)
+              return false
+            }
+          }
+
+          // Use BlockSuite's store.slots.ready event for proper initialization
+          // This is the recommended approach per BlockSuite documentation
+          const storeWithSlots = doc as unknown as StoreWithSlots
+          if (storeWithSlots.slots?.ready) {
+            const readySubscription = storeWithSlots.slots.ready.subscribe(() => {
+              if (!mounted) return
+
+              // Try to add mindmap now that store is ready
+              if (!addMindmapToSurface()) {
+                // If surface still not ready (rare edge case), use short polling as fallback
+                // This handles cases where ready fires before surface block is fully initialized
+                const MAX_FALLBACK_ATTEMPTS = 5
+                const FALLBACK_INTERVAL_MS = 100
+                let attempts = 0
+
+                const fallbackTry = () => {
+                  if (!mounted) return
+                  if (addMindmapToSurface()) return
+                  if (attempts < MAX_FALLBACK_ATTEMPTS) {
+                    attempts++
+                    setTimeout(fallbackTry, FALLBACK_INTERVAL_MS)
+                  } else {
+                    console.warn('Surface not ready after ready event + fallback attempts')
+                    if (mounted) {
+                      setError('Mind map surface failed to initialize. Please try refreshing the page.')
+                    }
+                  }
+                }
+                fallbackTry()
+              }
+            })
+            subscriptions.push(readySubscription)
+          } else {
+            // Fallback for older BlockSuite versions without slots.ready
+            // Use polling approach with clear timing rationale
+            const MAX_ATTEMPTS = 20 // 20 attempts × 100ms = 2000ms max wait
+            const POLL_INTERVAL_MS = 100
+            let attempts = 0
+
+            const pollForSurface = () => {
+              if (!mounted) return
+              if (addMindmapToSurface()) return
+              if (attempts < MAX_ATTEMPTS) {
                 attempts++
-                setTimeout(tryAddMindmap, POLL_INTERVAL_MS)
+                setTimeout(pollForSurface, POLL_INTERVAL_MS)
               } else {
-                // Surface initialization failed after max attempts (500ms total)
-                // This can happen on slow devices or if BlockSuite has issues loading.
-                // Show user feedback instead of silently failing.
-                console.warn('Surface not ready after max attempts, mindmap not created')
+                console.warn('Surface not ready after max polling attempts (2s)')
                 if (mounted) {
                   setError('Mind map surface failed to initialize. Please try refreshing the page.')
                 }
               }
-            } catch (e) {
-              console.warn('Failed to add mindmap element:', e)
-              // This is non-fatal - the editor still works
             }
+            pollForSurface()
           }
 
-          tryAddMindmap()
-
-          // Set up change listener
-          const docWithSlots = doc as Doc & {
-            slots?: {
-              historyUpdated?: {
-                on: (callback: () => void) => { dispose: () => void }
-              }
-            }
-          }
-          if (docWithSlots.slots?.historyUpdated) {
-            disposable = docWithSlots.slots.historyUpdated.on(() => {
+          // Set up change listener using blockUpdated event
+          if (storeWithSlots.slots?.blockUpdated) {
+            const updateSubscription = storeWithSlots.slots.blockUpdated.subscribe(() => {
               if (onTreeChange && mounted) {
                 // Try to extract the actual current tree from BlockSuite
                 const surface = doc.getBlockById(surfaceId)
@@ -326,6 +375,7 @@ export function MindMapCanvas({
                 onTreeChange(treeToRender)
               }
             })
+            subscriptions.push(updateSubscription)
           }
 
           setIsLoading(false)
@@ -343,9 +393,8 @@ export function MindMapCanvas({
 
     return () => {
       mounted = false
-      if (disposable) {
-        disposable.dispose()
-      }
+      // Unsubscribe from all BlockSuite event subscriptions
+      subscriptions.forEach((sub) => sub.unsubscribe())
       cleanup()
     }
   }, [documentId, treeToRender, style, layout, readOnly, onTreeChange, cleanup])
