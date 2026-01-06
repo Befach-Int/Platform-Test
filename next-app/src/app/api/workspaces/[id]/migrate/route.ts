@@ -236,13 +236,15 @@ export async function POST(
     }
 
     // Get pending mind maps (not yet migrated or failed) - explicit team_id filtering + RLS
+    // Fetch one extra to detect if there are more records for pagination
+    const fetchLimit = options.limit || options.batchSize
     const { data: pendingMaps, error: mapsError } = await supabase
       .from('mind_maps')
       .select('id')
       .eq('workspace_id', workspaceId)
       .eq('team_id', workspace.team_id)
       .in('migration_status', ['pending', 'failed', null])
-      .limit(options.limit || options.batchSize)
+      .limit(fetchLimit + 1)
 
     if (mapsError) {
       sanitizeDbError(mapsError)
@@ -391,12 +393,16 @@ export async function POST(
     // Create batch result
     const batchResult = createBatchResult(results, startedAt)
 
+    // hasMore is true if we fetched more records than we processed (we fetched fetchLimit + 1)
+    const hasMore = pendingMaps.length > options.batchSize
+
     return NextResponse.json({
-      success: batchResult.failed < batchResult.totalMaps,
+      success: batchResult.failed === 0,
       dryRun: options.dryRun,
       result: batchResult,
-      hasMore: pendingMaps.length > options.batchSize,
-      remainingCount: Math.max(0, pendingMaps.length - options.batchSize),
+      hasMore,
+      // remainingCount is approximate - at least this many remain if hasMore is true
+      remainingCount: hasMore ? pendingMaps.length - options.batchSize : 0,
     })
   } catch (error: unknown) {
     console.error('Error in POST /api/workspaces/[id]/migrate:', error)
