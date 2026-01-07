@@ -436,7 +436,7 @@ export function MindMapCanvas({
     return (
       <div
         className={cn(
-          `flex items-center justify-center h-full min-h-100 bg-destructive/10 rounded-lg`,
+          `flex items-center justify-center h-full min-h-[400px] bg-destructive/10 rounded-lg`,
           className,
         )}
       >
@@ -460,7 +460,7 @@ export function MindMapCanvas({
     <div
       ref={containerRef}
       className={cn(
-        "blocksuite-mindmap-container w-full h-full min-h-100",
+        "blocksuite-mindmap-container w-full h-full min-h-[400px]",
         isLoading && "opacity-0",
         className,
       )}
