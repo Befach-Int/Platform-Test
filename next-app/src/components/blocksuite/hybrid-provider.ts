@@ -191,6 +191,7 @@ export class HybridProvider {
 
   /**
    * Update document metadata in PostgreSQL
+   * Note: Explicit team_id filtering required per project conventions
    */
   private async updateMetadata(sizeBytes: number): Promise<void> {
     try {
@@ -203,6 +204,7 @@ export class HybridProvider {
           updated_at: new Date().toISOString(),
         })
         .eq('id', this.documentId)
+        .eq('team_id', this.teamId)
 
       if (error) {
         console.warn('[HybridProvider] Failed to update metadata:', error)

@@ -84,11 +84,11 @@ export function useBlockSuiteSync(
     providerRef.current = provider
 
     // Load initial state
+    // Note: isConnected is driven by onConnectionChange callback, not load completion
     provider
       .load()
       .then(() => {
         setIsLoading(false)
-        setIsConnected(true)
       })
       .catch((err) => {
         setError(err)
