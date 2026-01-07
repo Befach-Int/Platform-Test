@@ -72,7 +72,7 @@ describe('extractTextFromBlockSuiteTree', () => {
 
   it('should use default maxDepth of 50 for safety', () => {
     // Create a deeply nested tree
-    let tree: BlockSuiteMindmapNode = { text: 'Level 0', children: [] }
+    const tree: BlockSuiteMindmapNode = { text: 'Level 0', children: [] }
     let current = tree
     for (let i = 1; i <= 55; i++) {
       const child: BlockSuiteMindmapNode = { text: `Level ${i}`, children: [] }
