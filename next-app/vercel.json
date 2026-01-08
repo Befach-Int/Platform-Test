@@ -1,5 +1,10 @@
 {
   "framework": "nextjs",
+  "functions": {
+    "app/api/ai/**/*.ts": {
+      "maxDuration": 300
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
