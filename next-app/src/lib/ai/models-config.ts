@@ -321,6 +321,30 @@ export const MODEL_REGISTRY: ModelConfig[] = [
     priority: { vision: 1, tools: 3, reasoning: 3, default: 4 },
     role: "chat", // User-facing multimodal chat (NOT internal vision-only)
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Gemini 2.5 Flash - Vision Fallback (NEW - Phase 6)
+  // Vision-capable fallback for when Gemini 3 Flash fails
+  // 1M context, multimodal, used as visual_reasoning fallback
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    key: "gemini-2.5-flash",
+    provider: "openrouter",
+    modelId: "google/gemini-2.5-flash-preview",
+    displayName: "Gemini 2.5 Flash",
+    icon: "👁️",
+    capabilities: ["vision", "large_context", "speed"],
+    contextLimit: 1_000_000,
+    compactAt: 800_000, // 80% of 1M
+    costPer1M: { input: 0.15, output: 0.6 },
+    providerSettings: { data_collection: "deny" },
+    supportsVision: true,
+    supportsTools: true,
+    supportsReasoning: false,
+    isSlowModel: false,
+    priority: { vision: 2, tools: 5, reasoning: 5, default: 6 }, // Vision fallback (priority 2)
+    role: "chat",
+  },
 ];
 
 // =============================================================================
@@ -369,11 +393,15 @@ export const MODEL_ROUTING = {
     fallback: "z-ai/glm-4.7",
     tertiary: "moonshotai/kimi-k2-thinking:nitro",
   },
-  /** Visual reasoning - image analysis, diagrams, charts */
+  /** Visual reasoning - image analysis, diagrams, charts
+   * NOTE: Fallbacks must also support vision for true image analysis fallback.
+   * Gemini 2.5 Flash is the vision-capable fallback when Gemini 3 Flash fails.
+   * Grok 4.1 is tertiary (text-only, for follow-up when image context exists).
+   */
   visual_reasoning: {
     primary: "google/gemini-3-flash-preview",
-    fallback: "x-ai/grok-4.1-fast:nitro",
-    tertiary: "moonshotai/kimi-k2-thinking:nitro",
+    fallback: "google/gemini-2.5-flash-preview", // Vision-capable fallback
+    tertiary: "x-ai/grok-4.1-fast:nitro", // Text-only (for follow-up responses)
   },
   /** Large context - documents >200K tokens */
   large_context: {

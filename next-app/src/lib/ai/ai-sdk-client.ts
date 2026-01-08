@@ -113,6 +113,17 @@ export const aiModels = {
     "google/gemini-3-flash-preview",
     defaultProviderSettings,
   ),
+
+  /**
+   * Gemini 2.5 Flash (NEW - Phase 6)
+   * Vision fallback for Gemini 3 Flash, 1M context
+   * Cost: $0.15/M input, $0.60/M output
+   * Context: 1M tokens
+   */
+  gemini25Flash: openrouter(
+    "google/gemini-2.5-flash-preview",
+    defaultProviderSettings,
+  ),
 } as const;
 
 /**
@@ -178,6 +189,7 @@ export const modelIdMap: Record<string, LanguageModel> = {
   "z-ai/glm-4.7": aiModels.glm47,
   "minimax/minimax-m2.1": aiModels.minimaxM21,
   "google/gemini-3-flash-preview": aiModels.gemini3Flash,
+  "google/gemini-2.5-flash-preview": aiModels.gemini25Flash,
 };
 
 /**
