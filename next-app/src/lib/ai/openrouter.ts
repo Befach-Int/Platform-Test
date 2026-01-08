@@ -564,7 +564,7 @@ export async function callWithRetry<T>(
  * Prevents full workspace IDs from appearing in logs
  * Example: "abc123xyz" -> "abc1...(9)"
  */
-function redactId(id: string): string {
+export function redactId(id: string): string {
   if (!id || id.length <= 4) return '***'
   return `${id.substring(0, 4)}...(${id.length})`
 }

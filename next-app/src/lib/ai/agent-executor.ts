@@ -23,9 +23,9 @@
  * └─────────────────────────────────────────────────────────────┘
  */
 
-import { createClient } from "@/lib/supabase/server";
-import { toolRegistry, type AgenticTool } from "./tools/tool-registry";
-import type { ActionStatus, ActionPreview } from "./schemas/agentic-schemas";
+import { createClient } from '@/lib/supabase/server'
+import { toolRegistry, type AgenticTool } from './tools/tool-registry'
+import type { ActionStatus, ActionPreview } from './schemas/agentic-schemas'
 
 // ============================================================================
 // IMPORTANT: Import all tool files to trigger registration with toolRegistry
@@ -33,10 +33,10 @@ import type { ActionStatus, ActionPreview } from "./schemas/agentic-schemas";
 // These side-effect imports cause the tool registration to run.
 // Without these imports, toolRegistry would be empty when the API routes load.
 // Using bare imports (not `import * as`) to prevent tree-shaking from removing them.
-import "./tools/creation-tools";
-import "./tools/analysis-tools";
-import "./tools/optimization-tools";
-import "./tools/strategy-tools";
+import './tools/creation-tools'
+import './tools/analysis-tools'
+import './tools/optimization-tools'
+import './tools/strategy-tools'
 
 // =============================================================================
 // TYPES

@@ -84,6 +84,7 @@ export async function POST(request: Request) {
       quickMode?: boolean
       systemPrompt?: string
       workspaceContext?: {
+        workspaceId?: string
         workspaceName?: string
         workspacePhase?: string
         currentWorkItems?: Array<{ name: string; status: string }>
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
             resolvedModelId,
             duration,
             { promptTokens: usage.inputTokens, completionTokens: usage.outputTokens },
-            'sdk-chat-route' // Route identifier (no workspace context available)
+            workspaceContext?.workspaceId || 'sdk-chat-route'
           )
         }
       },

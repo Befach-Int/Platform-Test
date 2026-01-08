@@ -295,7 +295,7 @@ export const MODEL_REGISTRY: ModelConfig[] = [
     supportsTools: true,
     supportsReasoning: true,
     isSlowModel: false,
-    priority: { vision: 99, tools: 2, reasoning: 1, default: 2 }, // Best for reasoning, 2nd for tools (Claude Haiku is faster for pure tool use)
+    priority: { vision: 99, tools: 2, reasoning: 1, default: 2 }, // Best for reasoning, tied 2nd for tools with Kimi K2 (Claude Haiku is #1)
     role: "chat",
   },
 
