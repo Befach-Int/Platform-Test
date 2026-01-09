@@ -24,7 +24,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL(returnTo, request.url))
     }
 
-    // Check if user exists in users table and has a team
+    // Check if user exists in users table
+    // Note: The database trigger (on_auth_user_created) runs asynchronously after auth.users insert
+    // On serverless platforms like Vercel, the trigger may not complete before this code runs
+    // So we explicitly create the user record if it doesn't exist
     const { data: userProfile } = await supabase
       .from('users')
       .select('id')
@@ -32,8 +35,19 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (!userProfile) {
-      // User needs to complete onboarding
-      return NextResponse.redirect(new URL('/onboarding', request.url))
+      // Create user record explicitly (handles trigger race condition)
+      const { error: upsertError } = await supabase
+        .from('users')
+        .upsert({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+        }, { onConflict: 'id' })
+
+      if (upsertError) {
+        console.error('Failed to create user record:', upsertError)
+        // Continue anyway - the trigger might have created it by now
+      }
     }
 
     // Check if user is a member of any team

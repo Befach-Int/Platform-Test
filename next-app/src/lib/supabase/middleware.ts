@@ -1,35 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const DEBUG_ENDPOINT = 'http://127.0.0.1:7242/ingest/ebdf2fd5-9696-479e-b2f1-d72537069b93'
-
-async function sendDebug(payload: {
-  sessionId?: string
-  runId?: string
-  hypothesisId?: string
-  location: string
-  message: string
-  data?: Record<string, unknown>
-  timestamp?: number
-}) {
-  const body = {
-    sessionId: 'debug-session',
-    runId: 'pre-fix2',
-    timestamp: Date.now(),
-    ...payload,
-  }
-
-  try {
-    await fetch(DEBUG_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-  } catch {
-    // Swallow; Edge runtime has no fs fallback
-  }
-}
-
 /**
  * Create a Supabase client for middleware usage
  * This handles refreshing auth tokens and maintaining user sessions
@@ -70,34 +41,27 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // #region agent log
-  await sendDebug({
-    hypothesisId: 'H9',
-    location: 'supabase/middleware:updateSession:getUser',
-    message: 'updateSession user check',
-    data: {
-      hasUser: !!user,
-      cookies: request.cookies.getAll().map((c) => c.name),
-    },
-  })
-  // #endregion
-
-  // Protected routes - redirect to login if not authenticated
+  // Route classification for auth redirects
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
                      request.nextUrl.pathname.startsWith('/signup')
+
+  // Onboarding requires auth but shouldn't redirect to dashboard
+  const isOnboardingPage = request.nextUrl.pathname.startsWith('/onboarding')
+
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
                           request.nextUrl.pathname.startsWith('/workspaces') ||
                           request.nextUrl.pathname.startsWith('/teams')
 
-  if (!user && isProtectedRoute) {
-    // No user, redirect to login
+  // Redirect unauthenticated users from protected routes OR onboarding
+  if (!user && (isProtectedRoute || isOnboardingPage)) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
+  // Redirect authenticated users from login/signup to dashboard
+  // BUT NOT from onboarding (they need to complete it first)
   if (user && isAuthPage) {
-    // User is logged in but on auth page, redirect to dashboard
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
