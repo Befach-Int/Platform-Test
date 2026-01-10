@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { createClient, resetClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,22 @@ export default function LoginPage() {
 
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo')
+  const error = searchParams.get('error')
+
+  // Display error messages from auth callback redirects
+  useEffect(() => {
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        invalid_code: 'Your login link has expired or is invalid. Please try again.',
+        missing_email: 'An email address is required to sign in.',
+        account_setup_failed: 'Failed to set up your account. Please try again.',
+      }
+      setMessage({
+        type: 'error',
+        text: errorMessages[error] || 'An error occurred during sign in.',
+      })
+    }
+  }, [error])
 
   const handleMagicLink = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()

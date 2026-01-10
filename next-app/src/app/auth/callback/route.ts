@@ -74,18 +74,17 @@ async function hasTeamMembership(
   supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
-  const { data: teamMember, error: teamError } = await supabase
+  const { data: teamMembers, error: teamError } = await supabase
     .from('team_members')
     .select('team_id')
     .eq('user_id', userId)
-    .single()
+    .limit(1)
 
-  // Log unexpected errors (PGRST116 = "no rows found" is expected)
-  if (teamError && teamError.code !== 'PGRST116') {
+  if (teamError) {
     console.error('Failed to query team membership:', teamError)
   }
 
-  return !!teamMember
+  return !!teamMembers && teamMembers.length > 0
 }
 
 export async function GET(request: NextRequest) {
@@ -130,6 +129,11 @@ export async function GET(request: NextRequest) {
   // This comes after ensureUserRecord but before onboarding check because
   // invitation flows handle team joining themselves
   if (returnTo) {
+    // Security: Only allow relative paths to prevent open redirects
+    if (!returnTo.startsWith('/') || returnTo.startsWith('//')) {
+      console.error('Invalid returnTo parameter:', returnTo)
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
     return NextResponse.redirect(new URL(returnTo, request.url))
   }
 
