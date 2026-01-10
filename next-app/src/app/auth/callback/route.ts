@@ -78,7 +78,6 @@ async function hasTeamMembership(
     .from('team_members')
     .select('team_id')
     .eq('user_id', userId)
-    .limit(1)
     .single()
 
   // Log unexpected errors (PGRST116 = "no rows found" is expected)
@@ -94,9 +93,10 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code')
   const returnTo = requestUrl.searchParams.get('returnTo')
 
+  const supabase = await createClient()
+
   // Exchange auth code for session
   if (code) {
-    const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
       console.error('Failed to exchange code for session:', error)
@@ -106,7 +106,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
