@@ -98,7 +98,7 @@ export default function AcceptInvitePage() {
         data: { user },
       } = await supabase.auth.getUser()
 
-      if (user && user.email === data.email) {
+      if (user && user.email && user.email === data.email) {
         // User is authenticated and email matches, auto-accept
         await acceptInvitation(user, data as InvitationData)
       }
@@ -114,11 +114,16 @@ export default function AcceptInvitePage() {
     setAccepting(true)
 
     try {
+      // Guard: user email is required to accept invitation
+      if (!user.email) {
+        throw new Error('User email is required to accept invitation')
+      }
+
       // Create user profile if it doesn't exist (don't overwrite customized names)
       // Using insert + unique violation check to preserve existing user profiles
       const { error: insertError } = await supabase.from('users').insert({
         id: user.id,
-        email: user.email!,
+        email: user.email,
         name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
       })
 

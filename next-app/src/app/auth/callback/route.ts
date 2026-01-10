@@ -73,7 +73,8 @@ async function ensureUserRecord(
 
 /**
  * Checks if user has team membership (completed onboarding).
- * Returns false on error to redirect to onboarding (prevents redirect loops).
+ * Returns false on error (instead of true) to allow redirect to onboarding,
+ * preventing infinite loops between callback → dashboard → onboarding.
  */
 async function hasTeamMembership(
   supabase: SupabaseClient,
