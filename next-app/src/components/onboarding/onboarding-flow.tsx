@@ -90,20 +90,28 @@ export function OnboardingFlow({ user }: OnboardingFlowProps) {
 
       if (memberError) throw memberError
 
-      // Create workspace
-      const workspaceId = `workspace_${Date.now()}`
-      const { error: workspaceError } = await supabase.from('workspaces').insert({
-        id: workspaceId,
-        team_id: teamId,
-        name: workspaceName,
-        description: workspaceDescription || null,
-        mode: 'development', // Default workspace mode
-        mode_changed_at: new Date().toISOString(), // Match create-workspace-dialog behavior
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+      // Create workspace using API endpoint (better error handling)
+      const workspaceResponse = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          team_id: teamId,
+          name: workspaceName,
+          description: workspaceDescription || null,
+          mode: 'development',
+        }),
       })
 
-      if (workspaceError) throw workspaceError
+      if (!workspaceResponse.ok) {
+        const errorData = await workspaceResponse.json()
+        console.error('[Onboarding] Workspace creation failed:', errorData)
+        throw new Error(
+          errorData.details || errorData.error || 'Failed to create workspace'
+        )
+      }
+
+      const { workspace } = await workspaceResponse.json()
+      const workspaceId = workspace.id
 
       // Send invitations for valid emails (non-blocking)
       const validEmails = getValidEmails()

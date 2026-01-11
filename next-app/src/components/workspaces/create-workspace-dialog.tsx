@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,40 +37,32 @@ export function CreateWorkspaceDialog({ teamId, onSuccess, open: externalOpen, o
   const [mode, setMode] = useState<WorkspaceMode>(getDefaultWorkspaceMode())
 
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const workspaceId = `workspace_${Date.now()}`
-
-      // Enable all modules by default - tier controls access to Pro features
-      const allModules = [
-        'research',
-        'mind_map',
-        'features',
-        'dependencies',
-        'review',
-        'execution',
-        'collaboration',
-        'timeline',
-        'analytics',
-        'ai',
-      ]
-
-      const { error } = await supabase.from('workspaces').insert({
-        id: workspaceId,
-        team_id: teamId,
-        name,
-        description,
-        enabled_modules: allModules,
-        mode, // Workspace lifecycle mode (development/launch/growth/maintenance)
-        mode_changed_at: new Date().toISOString(),
+      // Create workspace using API endpoint (better error handling)
+      const response = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          team_id: teamId,
+          name,
+          description,
+          mode, // Workspace lifecycle mode (development/launch/growth/maintenance)
+        }),
       })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('[Create Workspace] Failed:', errorData)
+        throw new Error(errorData.details || errorData.error || 'Failed to create workspace')
+      }
+
+      const { workspace } = await response.json()
+      console.log('[Create Workspace] Success:', workspace.id)
 
       // Reset form
       setName('')
