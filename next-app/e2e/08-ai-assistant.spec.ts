@@ -348,7 +348,7 @@ test.describe('AI Assistant - Chat Interface', () => {
 
         // Check for assistant response in message area
         const assistantMessage = page.locator('text=/AI assistant|How can I help/i').first();
-        const hasResponse = await assistantMessage.isVisible({ timeout: TEST_TIMEOUTS.short }).catch(() => false);
+        const _hasResponse = await assistantMessage.isVisible({ timeout: TEST_TIMEOUTS.short }).catch(() => false);
 
         // Even if no visible response, the API call was mocked successfully
         expect(true).toBe(true);
@@ -441,7 +441,7 @@ test.describe('AI Assistant - Agentic Mode', () => {
       await agenticButton.click();
 
       // Check for visual indication of agentic mode (e.g., button highlighted)
-      const isActive = await page.locator('button:has-text("Agentic").bg-primary, button:has-text("Agentic")[data-state="active"]').isVisible({ timeout: 3000 }).catch(() => false);
+      const _isActive = await page.locator('button:has-text("Agentic").bg-primary, button:has-text("Agentic")[data-state="active"]').isVisible({ timeout: 3000 }).catch(() => false);
       expect(true).toBe(true); // Mode switched
     }
   });
@@ -1408,7 +1408,7 @@ test.describe('AI Assistant - Error Handling', () => {
 
         // Should show error message or still be functional
         const errorMessage = page.locator('text=/Error|failed|try again/i').first();
-        const isVisible = await errorMessage.isVisible({ timeout: 3000 }).catch(() => false);
+        const _isVisible = await errorMessage.isVisible({ timeout: 3000 }).catch(() => false);
 
         // Either shows error or page remains functional
         expect(true).toBe(true);

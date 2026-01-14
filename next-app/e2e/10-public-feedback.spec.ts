@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from '@playwright/test';
+import { test, expect, type Page as _Page, type BrowserContext as _BrowserContext } from '@playwright/test';
 import {
   createTeamInDatabase,
   createWorkspaceInDatabase,
@@ -216,7 +216,7 @@ test.describe('Public Feedback - Review Links', () => {
 
   let teamId: string;
   let workspaceId: string;
-  let workItemId: string;
+  let _workItemId: string;
 
   test.beforeAll(async () => {
     try {
@@ -242,7 +242,7 @@ test.describe('Public Feedback - Review Links', () => {
         teamId,
         workspaceId,
       });
-      workItemId = workItem.id;
+      _workItemId = workItem.id;
     } catch (error) {
       console.error('Setup failed:', error);
       throw error;
@@ -787,7 +787,7 @@ test.describe('Public Feedback - Triage Workflow', () => {
 
   test('should link feedback to existing work item', async ({ page }) => {
     // Create another work item to link to
-    const targetWorkItem = await createWorkItemInDatabase({
+    const _targetWorkItem = await createWorkItemInDatabase({
       title: 'Target Work Item for Linking',
       type: 'feature',
       phase: 'planning',

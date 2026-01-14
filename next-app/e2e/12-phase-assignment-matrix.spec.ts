@@ -36,7 +36,7 @@ const skipTests = !hasAdminClient();
 const PHASES = ['design', 'build', 'refine', 'launch'] as const;
 type Phase = (typeof PHASES)[number];
 
-const TEST_ASSIGNMENT_DATA = {
+const _TEST_ASSIGNMENT_DATA = {
   contributor: {
     phase: 'design' as Phase,
     can_edit: true,
@@ -1165,7 +1165,7 @@ test.describe('Phase Assignment Matrix - Security & Cross-Team Isolation', () =>
     // Should fail with 403 (not a team member) or 404 (workspace not found for user)
     // Could also return empty if RLS filters it out
     if (response.status() === 200) {
-      const data = await response.json();
+      const _data = await response.json();
       // RLS should filter out data from other teams
       // If any data is returned, it should NOT be from Team B
     } else {
@@ -1186,7 +1186,7 @@ test.describe('Phase Assignment Matrix - Security & Cross-Team Isolation', () =>
     }
   });
 
-  test('should prevent non-admin from creating assignments', async ({ request }) => {
+  test('should prevent non-admin from creating assignments', async ({ request: _request }) => {
     // Note: This test would require setting up a non-admin user session
     // For now, we verify the API endpoint checks for admin role
 
