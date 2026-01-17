@@ -235,6 +235,67 @@ Complete parameter and response documentation for all endpoints.
 
 ---
 
+## Duplications (`/api/duplications/show`)
+
+Get detailed duplicate code blocks for a specific file.
+
+### Parameters
+
+| Parameter | Description |
+| --------- | ----------- |
+| `key` | File key (required) - format: `project-key:path/to/file.ts` |
+| `branch` | Branch name |
+| `pullRequest` | PR number |
+
+### Response
+
+```json
+{
+  "duplications": [
+    {
+      "blocks": [
+        {
+          "from": 1,
+          "size": 20,
+          "_ref": "1"
+        },
+        {
+          "from": 50,
+          "size": 20,
+          "_ref": "2"
+        }
+      ]
+    }
+  ],
+  "files": {
+    "1": {
+      "key": "my-project:src/utils/helpers.ts",
+      "name": "helpers.ts",
+      "projectName": "My Project"
+    },
+    "2": {
+      "key": "my-project:src/utils/common.ts",
+      "name": "common.ts",
+      "projectName": "My Project"
+    }
+  }
+}
+```
+
+### Workflow: Find All Duplicates
+
+```bash
+# 1. Get files with most duplication
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://sonarcloud.io/api/components/tree?component=$PROJECT&qualifiers=FIL&metricKeys=duplicated_lines_density&s=metric&metricSort=duplicated_lines_density&asc=false&ps=20"
+
+# 2. For each file, get duplicate blocks
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://sonarcloud.io/api/duplications/show?key=my-project:src/file.ts"
+```
+
+---
+
 ## Rules (`/api/rules/search`)
 
 ### Parameters

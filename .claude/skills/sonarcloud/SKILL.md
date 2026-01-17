@@ -35,6 +35,7 @@ curl -H "Authorization: Bearer $TOKEN" "https://sonarcloud.io/api/qualitygates/p
 | `/api/project_analyses/search` | Analysis history | `project`, `from`, `to` |
 | `/api/measures/search_history` | Metrics over time | `component`, `metrics`, `from` |
 | `/api/components/tree` | Files with metrics | `qualifiers=FIL`, `metricKeys`, `metricSort` |
+| `/api/duplications/show` | Duplicate code blocks | `key` (file key), `branch` |
 
 ## Common Filters
 
@@ -64,6 +65,18 @@ curl ... "/api/measures/component?component=$PROJECT&pullRequest=123&metricKeys=
 ```bash
 curl ... "/api/issues/search?organization=$ORG&componentKeys=$PROJECT&types=VULNERABILITY&resolved=false"
 curl ... "/api/hotspots/search?projectKey=$PROJECT&status=TO_REVIEW"
+```
+
+### Duplication Analysis
+```bash
+# Get duplication metrics
+curl ... "/api/measures/component?component=$PROJECT&metricKeys=duplicated_lines,duplicated_lines_density,duplicated_blocks,duplicated_files"
+
+# Get files with most duplication
+curl ... "/api/components/tree?component=$PROJECT&qualifiers=FIL&metricKeys=duplicated_lines_density&s=metric&metricSort=duplicated_lines_density&asc=false&ps=20"
+
+# Get duplicate blocks for a specific file (requires file key from above)
+curl ... "/api/duplications/show?key=my-project:src/utils/helpers.ts"
 ```
 
 ## Response Processing
