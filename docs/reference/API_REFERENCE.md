@@ -1,5 +1,7 @@
 # 📘 API REFERENCE
 
+> **Split Version Available**: This file has been split into smaller files for better AI readability. See [api-reference/README.md](api-reference/README.md) for the organized version.
+
 **Last Updated:** 2025-12-28 (Verified)
 **Version:** 1.3
 **Base URL (Production):** `https://platform-test-cyan.vercel.app`
@@ -2521,8 +2523,8 @@ gem install platform-api
 
 ## 📚 ADDITIONAL RESOURCES
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and data flows
-- **[database-schema.md](../implementation/database-schema.md)** - Complete database schema
+- **[ARCHITECTURE.md](../architecture/ARCHITECTURE.md)** - System architecture and data flows
+- **[database-schema.md](../architecture/database-schema.md)** - Complete database schema
 - **[CLAUDE.md](../../CLAUDE.md)** - Project guidelines and coding standards
 
 ---

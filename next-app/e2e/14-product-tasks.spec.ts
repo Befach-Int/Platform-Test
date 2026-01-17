@@ -34,7 +34,7 @@ test.describe('Product Tasks - CRUD Operations', () => {
 
   let teamId: string;
   let workspaceId: string;
-  let workItemId: string;
+  let _workItemId: string;
 
   test.beforeAll(async () => {
     try {
@@ -60,7 +60,7 @@ test.describe('Product Tasks - CRUD Operations', () => {
         teamId,
         workspaceId,
       });
-      workItemId = workItem.id;
+      _workItemId = workItem.id;
     } catch (error) {
       console.error('Setup failed:', error);
       throw error;
@@ -217,7 +217,7 @@ test.describe('Product Tasks - CRUD Operations', () => {
 
     if (await taskCard.isVisible({ timeout: 5000 }).catch(() => false)) {
       // Open dropdown menu
-      const moreButton = page
+      const _moreButton = page
         .locator(`[data-testid="task-${task.id}"] button:has([data-icon="more-horizontal"]), button:has-text("...")`)
         .first();
 
@@ -278,7 +278,7 @@ test.describe('Product Tasks - CRUD Operations', () => {
       page.on('dialog', dialog => dialog.accept());
 
       // Find delete button in dropdown or directly
-      const deleteButton = page.locator('button:has-text("Delete"), [role="menuitem"]:has-text("Delete")').first();
+      const _deleteButton = page.locator('button:has-text("Delete"), [role="menuitem"]:has-text("Delete")').first();
 
       // Open menu first if needed
       const menuTrigger = page.locator('button').filter({ has: page.locator('[data-icon="more-horizontal"], svg') }).first();
@@ -573,7 +573,7 @@ test.describe('Product Tasks - Assignment', () => {
     await expect(taskCard).toBeVisible({ timeout: 5000 });
 
     // Avatar or assignee indicator may be present
-    const assigneeIndicator = page.locator('[class*="avatar"], text=/assigned.*to/i').first();
+    const _assigneeIndicator = page.locator('[class*="avatar"], text=/assigned.*to/i').first();
     // This is expected to pass if task structure is correct
     expect(true).toBe(true);
   });
@@ -1042,7 +1042,7 @@ test.describe('Product Tasks - Convert to Work Item', () => {
     });
 
     // Create linked task
-    const task = await createProductTaskInDatabase({
+    const _task = await createProductTaskInDatabase({
       title: `Linked Task ${Date.now()}`,
       workspaceId,
       teamId,

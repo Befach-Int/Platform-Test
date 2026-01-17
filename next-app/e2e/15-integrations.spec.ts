@@ -4,7 +4,6 @@ import {
   createWorkspaceInDatabase,
   cleanupTeamData,
   hasAdminClient,
-  getAdminClient,
   getRegularClient,
 } from '../tests/utils/database'
 
@@ -231,7 +230,7 @@ test.describe('Integrations - View Integration Providers', () => {
   test.skip(skipTests, 'SUPABASE_SERVICE_ROLE_KEY not configured - skipping database tests')
 
   let teamId: string
-  let workspaceId: string
+  let _workspaceId: string
 
   test.beforeAll(async () => {
     try {
@@ -245,7 +244,7 @@ test.describe('Integrations - View Integration Providers', () => {
         name: `Integrations Workspace-${Date.now()}`,
         teamId: teamId,
       })
-      workspaceId = workspace.id
+      _workspaceId = workspace.id
     } catch (error) {
       console.error('Setup failed:', error)
       throw error
@@ -375,7 +374,7 @@ test.describe('Integrations - Connect Integration', () => {
   test.skip(skipTests, 'SUPABASE_SERVICE_ROLE_KEY not configured - skipping database tests')
 
   let teamId: string
-  let workspaceId: string
+  let _workspaceId: string
 
   test.beforeAll(async () => {
     try {
@@ -389,7 +388,7 @@ test.describe('Integrations - Connect Integration', () => {
         name: `Connect Workspace-${Date.now()}`,
         teamId: teamId,
       })
-      workspaceId = workspace.id
+      _workspaceId = workspace.id
     } catch (error) {
       console.error('Setup failed:', error)
       throw error
@@ -524,7 +523,7 @@ test.describe('Integrations - Disconnect Integration', () => {
 
   let teamId: string
   let workspaceId: string
-  let integrationId: string
+  let _integrationId: string
 
   test.beforeAll(async () => {
     try {
@@ -550,7 +549,7 @@ test.describe('Integrations - Disconnect Integration', () => {
         scopes: ['read:jira-work', 'write:jira-work'],
         providerAccountName: 'test-project',
       })
-      integrationId = integration.id
+      _integrationId = integration.id
     } catch (error) {
       console.error('Setup failed:', error)
       throw error
@@ -616,7 +615,7 @@ test.describe('Integrations - Disconnect Integration', () => {
 
   test('should remove integration after confirmation', async ({ page }) => {
     // Create a new integration to delete
-    const newIntegration = await createIntegrationInDatabase({
+    const _newIntegration = await createIntegrationInDatabase({
       provider: 'linear',
       name: 'Linear - Test Team',
       status: 'connected',
@@ -654,7 +653,7 @@ test.describe('Integrations - Disconnect Integration', () => {
     }
   })
 
-  test('should cleanup associated workspace access when disconnecting', async ({ page }) => {
+  test('should cleanup associated workspace access when disconnecting', async ({ page: _page }) => {
     // Create integration and workspace access
     const integration = await createIntegrationInDatabase({
       provider: 'notion',
@@ -710,7 +709,7 @@ test.describe('Integrations - Sync Operations', () => {
   test.skip(skipTests, 'SUPABASE_SERVICE_ROLE_KEY not configured - skipping database tests')
 
   let teamId: string
-  let workspaceId: string
+  let _workspaceId: string
   let integrationId: string
 
   test.beforeAll(async () => {
@@ -725,7 +724,7 @@ test.describe('Integrations - Sync Operations', () => {
         name: `Sync Workspace-${Date.now()}`,
         teamId: teamId,
       })
-      workspaceId = workspace.id
+      _workspaceId = workspace.id
 
       // Create a connected integration for sync testing
       const integration = await createIntegrationInDatabase({
@@ -889,7 +888,7 @@ test.describe('Integrations - Settings and Configuration', () => {
 
   let teamId: string
   let workspaceId: string
-  let integrationId: string
+  let _integrationId: string
 
   test.beforeAll(async () => {
     try {
@@ -915,7 +914,7 @@ test.describe('Integrations - Settings and Configuration', () => {
         scopes: ['repo', 'read:user', 'read:org'],
         providerAccountName: 'settings-test-org',
       })
-      integrationId = integration.id
+      _integrationId = integration.id
 
       // Enable for workspace
       await createWorkspaceIntegrationAccessInDatabase({
@@ -1055,8 +1054,8 @@ test.describe('Integrations - Multi-Tenancy Isolation', () => {
 
   let teamAId: string
   let teamBId: string
-  let integrationAId: string
-  let integrationBId: string
+  let _integrationAId: string
+  let _integrationBId: string
 
   test.beforeAll(async () => {
     try {
@@ -1082,7 +1081,7 @@ test.describe('Integrations - Multi-Tenancy Isolation', () => {
         teamId: teamAId,
         createdBy: 'user_a',
       })
-      integrationAId = integrationA.id
+      _integrationAId = integrationA.id
 
       // Create integration for Team B
       const integrationB = await createIntegrationInDatabase({
@@ -1092,7 +1091,7 @@ test.describe('Integrations - Multi-Tenancy Isolation', () => {
         teamId: teamBId,
         createdBy: 'user_b',
       })
-      integrationBId = integrationB.id
+      _integrationBId = integrationB.id
     } catch (error) {
       console.error('Setup failed:', error)
       throw error

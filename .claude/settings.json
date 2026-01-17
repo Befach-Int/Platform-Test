@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Users/harsha_befach/.bun/bin/bun.exe\" install)",
+      "Bash(\"/c/Users/harsha_befach/.bun/bin/bun.exe\" run dev)",
+      "Bash(ls:*)"
+    ]
+  }
+}

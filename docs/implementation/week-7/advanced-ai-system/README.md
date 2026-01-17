@@ -80,6 +80,20 @@ Before starting this implementation:
 
 ## 📖 Documentation Index
 
+### AI Tool Architecture (6-Phase Refactor)
+
+> **Goal**: Consolidate 38+ specialized tools into 7 generalized tools with multi-model orchestration
+
+| Document | Lines | Purpose |
+|----------|-------|---------|
+| [AI_TOOL_ARCHITECTURE.md](AI_TOOL_ARCHITECTURE.md) | 5,708 | Original complete document |
+| [phase-1-wire-missing-tools.md](phase-1-wire-missing-tools.md) | ~260 | Wire 10 missing tools in agent-executor |
+| [phase-2-model-routing.md](phase-2-model-routing.md) | ~580 | Add GLM 4.7, MiniMax M2.1, Gemini 3 Flash |
+| [phase-3-generalized-tools.md](phase-3-generalized-tools.md) | ~1,136 | Consolidate 38 -> 7 generalized tools |
+| [phase-4-orchestration.md](phase-4-orchestration.md) | ~1,281 | 4-tier routing, fallback chains, consensus |
+| [phase-5-agent-memory.md](phase-5-agent-memory.md) | ~1,402 | Memory UI, 10k token limit, learning |
+| [phase-6-ux-improvements.md](phase-6-ux-improvements.md) | ~979 | Thinking status, quality toggle, Deep Reasoning |
+
 ### Implementation Phases
 
 | Phase | Content |
@@ -162,9 +176,9 @@ L1: Raw Items (Preserved) ─────  Individual decisions, ideas, feedback
 
 ## 🔗 Related Documentation
 
-- **[Week 7: AI Integration](../week-7-ai-analytics.md)** - Foundation this builds on
-- **[PROGRESS.md](../../planning/PROGRESS.md)** - Overall project tracking
-- **[API Reference](../../reference/API_REFERENCE.md)** - Existing AI endpoints
+- **[Week 7: AI Integration](../README.md)** - Foundation this builds on
+- **[PROGRESS.md](../../../planning/PROGRESS.md)** - Overall project tracking
+- **[API Reference](../../../reference/API_REFERENCE.md)** - Existing AI endpoints
 
 ---
 

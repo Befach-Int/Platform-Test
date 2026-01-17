@@ -1,5 +1,7 @@
 # Code Patterns Reference
 
+> **Split Version Available**: This file has been split into smaller files for better AI readability. See [code-patterns/README.md](code-patterns/README.md) for the organized version.
+
 **Last Updated**: 2025-12-28 (Verified - Next.js 16.1.1 compatible)
 **Purpose**: Comprehensive code examples for common patterns in the Product Lifecycle Management Platform
 
@@ -1012,6 +1014,6 @@ export function StrategyView({ context, workItemId }: Props) {
 ---
 
 **See Also**:
-- [Architecture Reference](ARCHITECTURE.md) - Two-layer system, phase system details
+- [Architecture Reference](../architecture/ARCHITECTURE.md) - Two-layer system, phase system details
 - [API Reference](API_REFERENCE.md)
 - [Main Implementation Plan](../implementation/README.md)

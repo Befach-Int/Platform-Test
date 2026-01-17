@@ -1,5 +1,7 @@
 # shadcn/ui Third-Party Registry Component Guide
 
+> **Split Version Available**: This file has been split into smaller files for better AI readability. See [shadcn/README.md](shadcn/README.md) for the organized version.
+
 **Last Updated**: 2025-01-17
 **Purpose**: Strategic component selection guide for choosing the right registry based on use case
 **Total Registries**: 14 analyzed
