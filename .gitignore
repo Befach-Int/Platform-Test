@@ -1,5 +1,5 @@
-# Claude/Cursor settings
-.claude/
+# Claude/Cursor settings (keep skills and commands, ignore local settings)
+.claude/settings.local.json
 cursor-mcp-config.json
 
 # Node modules (if you add any dependencies later)
