@@ -1,4 +1,4 @@
-import { test, expect, type Page as _Page, type BrowserContext as _BrowserContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   createTeamInDatabase,
   createWorkspaceInDatabase,

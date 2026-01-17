@@ -4,7 +4,6 @@ import {
   createWorkspaceInDatabase,
   cleanupTeamData,
   hasAdminClient,
-  getAdminClient as _getAdminClient,
   getRegularClient,
 } from '../tests/utils/database'
 
