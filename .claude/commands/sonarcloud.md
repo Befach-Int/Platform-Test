@@ -37,27 +37,24 @@ Pull code quality data from SonarCloud. Requires `SONARCLOUD_TOKEN` environment 
 ## Instructions
 
 <steps>
+
 1. Parse the query from `$ARGUMENTS` to determine:
    - Query type (issues, metrics, gate, health, pr, hotspots, history)
    - Project key
    - Optional filters (branch, severity, type, new-code, etc.)
-
 2. Check for `SONARCLOUD_TOKEN` environment variable. If not set, inform user.
-
 3. Check for `SONARCLOUD_ORG` environment variable or ask user for organization key.
-
 4. Execute the appropriate API call using curl or the TypeScript client at `next-app/src/lib/integrations/sonarcloud.ts`
-
 5. Format and present results clearly:
    - For issues: Group by severity/type, show file, line, message
    - For metrics: Show as table with metric name and value
    - For quality gate: Show pass/fail with failed conditions
    - For health: Comprehensive summary with all data
-
 6. Offer follow-up actions:
    - "Show issues in specific file?"
    - "Get more details on a specific issue?"
    - "Compare with another branch?"
+
 </steps>
 
 ## Example Outputs
@@ -151,6 +148,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ## Full Skill Reference
 
 See `.claude/skills/sonarcloud/SKILL.md` for complete API documentation including:
+
 - All endpoints and parameters
 - Response structures
 - Pagination handling
