@@ -126,8 +126,5 @@
   },
   "overrides": {
     "@blocksuite/store": "^0.19.5"
-  },
-  "resolutions": {
-    "@blocksuite/store": "^0.19.5"
   }
 }
