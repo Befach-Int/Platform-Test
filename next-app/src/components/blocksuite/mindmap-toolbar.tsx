@@ -9,6 +9,8 @@ import {
   Maximize2,
   Palette,
   LayoutGrid,
+  Undo2,
+  Redo2,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -49,6 +51,16 @@ export interface MindmapToolbarProps {
   layout: BlockSuiteLayoutType
   /** Callback when layout changes */
   onLayoutChange?: (layout: BlockSuiteLayoutType) => void
+  /** Callback to add a child node to the selected node */
+  onAddChild?: (parentNodeId: string) => void
+  /** Callback to add a sibling node to the selected node */
+  onAddSibling?: (siblingNodeId: string) => void
+  /** Callback to delete the selected node */
+  onDeleteNode?: (nodeId: string) => void
+  /** Callback to undo the last operation */
+  onUndo?: () => void
+  /** Callback to redo the last undone operation */
+  onRedo?: () => void
   /** Whether canvas is read-only */
   readOnly?: boolean
   /** Additional CSS classes */
@@ -91,45 +103,57 @@ function MindmapToolbar({
   onStyleChange,
   layout,
   onLayoutChange,
+  onAddChild,
+  onAddSibling,
+  onDeleteNode,
+  onUndo,
+  onRedo,
   readOnly = false,
   className,
 }: MindmapToolbarProps) {
   // Determine if node operations should be disabled
   const isNodeSelected = selectedNodeId !== null
   const isRootSelected = selectedNodeId === mindmapId
-  const canAddChild = isNodeSelected && !readOnly
-  const canAddSibling = isNodeSelected && !isRootSelected && !readOnly
-  const canDelete = isNodeSelected && !isRootSelected && !readOnly
+  const canAddChild = isNodeSelected && !readOnly && !!onAddChild
+  const canAddSibling = isNodeSelected && !isRootSelected && !readOnly && !!onAddSibling
+  const canDelete = isNodeSelected && !isRootSelected && !readOnly && !!onDeleteNode
 
   /**
    * Add a child node to the currently selected node
-   * Placeholder implementation - logs to console
    */
   const handleAddChild = () => {
-    if (!canAddChild) return
-    console.log('[MindmapToolbar] Add child node to:', selectedNodeId)
-    // TODO: Implement actual node addition via BlockSuite API
-    // This requires accessing the surface model and mindmap element
+    if (!canAddChild || !selectedNodeId) return
+    onAddChild?.(selectedNodeId)
   }
 
   /**
    * Add a sibling node to the currently selected node
-   * Placeholder implementation - logs to console
    */
   const handleAddSibling = () => {
-    if (!canAddSibling) return
-    console.log('[MindmapToolbar] Add sibling node to:', selectedNodeId)
-    // TODO: Implement actual sibling addition via BlockSuite API
+    if (!canAddSibling || !selectedNodeId) return
+    onAddSibling?.(selectedNodeId)
   }
 
   /**
    * Delete the currently selected node
-   * Placeholder implementation - logs to console
    */
   const handleDelete = () => {
-    if (!canDelete) return
-    console.log('[MindmapToolbar] Delete node:', selectedNodeId)
-    // TODO: Implement actual node deletion via BlockSuite API
+    if (!canDelete || !selectedNodeId) return
+    onDeleteNode?.(selectedNodeId)
+  }
+
+  /**
+   * Undo the last operation
+   */
+  const handleUndo = () => {
+    onUndo?.()
+  }
+
+  /**
+   * Redo the last undone operation
+   */
+  const handleRedo = () => {
+    onRedo?.()
   }
 
   /**
@@ -397,6 +421,41 @@ function MindmapToolbar({
               </div>
             </TooltipTrigger>
             <TooltipContent>Change mindmap layout</TooltipContent>
+          </Tooltip>
+        </div>
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
+        {/* Undo/Redo Group */}
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleUndo}
+                disabled={readOnly || !onUndo}
+                aria-label="Undo"
+              >
+                <Undo2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleRedo}
+                disabled={readOnly || !onRedo}
+                aria-label="Redo"
+              >
+                <Redo2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Redo (Ctrl+Y)</TooltipContent>
           </Tooltip>
         </div>
       </div>

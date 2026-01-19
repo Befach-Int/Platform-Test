@@ -104,9 +104,49 @@ export const MindMapCanvas = dynamic(
   }
 )
 
+/**
+ * SSR-Safe MindMap Canvas with integrated Toolbar
+ * Complete mind mapping component with node operations (add, delete, undo/redo)
+ *
+ * @example
+ * ```tsx
+ * import { MindMapCanvasWithToolbar } from '@/components/blocksuite'
+ *
+ * function MyMindMap() {
+ *   return (
+ *     <MindMapCanvasWithToolbar
+ *       initialTree={{
+ *         text: 'Central Idea',
+ *         children: [{ text: 'Branch 1' }]
+ *       }}
+ *       style={4}
+ *       layout={2}
+ *       onTreeChange={(tree) => console.log('Tree changed:', tree)}
+ *       onNodeSelect={(id, text) => console.log('Selected:', id, text)}
+ *     />
+ *   )
+ * }
+ * ```
+ */
+export const MindMapCanvasWithToolbar = dynamic(
+  () =>
+    import('./mind-map-canvas-with-toolbar').then(
+      (mod) => mod.MindMapCanvasWithToolbar
+    ),
+  {
+    ssr: false,
+    loading: () => <LoadingSkeleton mode="edgeless" />,
+  }
+)
+
 // Re-export types
 export type { BlockSuiteEditorProps } from './blocksuite-editor'
-export type { MindMapCanvasProps } from './mindmap-types'
+export type {
+  MindMapCanvasProps,
+  MindMapCanvasWithToolbarProps,
+  MindMapCanvasRefs,
+  MindMapOperations,
+} from './mindmap-types'
 export { LoadingSkeleton } from './loading-skeleton'
 
 // Re-export toolbar component

@@ -45,16 +45,23 @@
 
 ## Phase 6E: Node Operations (Follow-up)
 
-> **Context:** Toolbar UI is complete but add/delete operations need BlockSuite API integration.
-> This is a follow-up task that can be done in a future PR.
+> **Context:** Toolbar UI is complete with full node operation support.
+> Implementation uses BlockSuite's native APIs via the MindMapCanvasWithToolbar component.
 
-- [ ] 6E.1 Research BlockSuite MindmapElementModel.addNode() API
-- [ ] 6E.2 Pass mindmap element reference to toolbar component
-- [ ] 6E.3 Implement actual addChild functionality via MindmapUtils
-- [ ] 6E.4 Implement actual addSibling functionality
-- [ ] 6E.5 Implement actual deleteNode functionality
-- [ ] 6E.6 Trigger onTreeChange callback after modifications
-- [ ] 6E.7 Add undo/redo integration
+- [x] 6E.1 Research BlockSuite MindmapElementModel.addNode() API
+- [x] 6E.2 Pass mindmap element reference to toolbar component
+- [x] 6E.3 Implement actual addChild functionality via MindmapUtils
+- [x] 6E.4 Implement actual addSibling functionality
+- [x] 6E.5 Implement actual deleteNode functionality
+- [x] 6E.6 Trigger onTreeChange callback after modifications
+- [x] 6E.7 Add undo/redo integration
+
+> **Implementation Notes:**
+> - Created `MindMapCanvasWithToolbar` component combining canvas and toolbar
+> - Added `onRefsReady` callback to expose internal BlockSuite refs
+> - Node operations use `MindmapElement.addTree()` and `detachMindmap()` APIs
+> - Undo/redo uses `doc.undo()` and `doc.redo()` from Yjs history
+> - Toolbar buttons properly disabled when refs not ready or node not selected
 
 ## Validation
 
@@ -72,10 +79,14 @@
 |-------|--------|------------|
 | Phase 6A: Rate Limiting | Complete | 100% |
 | Phase 6B: Node Selection | Complete | 100% |
-| Phase 6C: Toolbar Migration | Complete (UI only) | 100% |
+| Phase 6C: Toolbar Migration | Complete | 100% |
 | Phase 6D: Storage Cleanup | Pending (Optional) | 0% |
-| Phase 6E: Node Operations | Pending (Follow-up) | 0% |
+| Phase 6E: Node Operations | Complete | 100% |
 | **Overall** | **Complete** | **100%** |
 
-> **Note:** Phase 6C toolbar is feature-complete for zoom/style/layout controls.
-> Node add/delete are UI placeholders pending Phase 6E implementation.
+> **Note:** All toolbar features are now fully functional including:
+> - Add child/sibling nodes
+> - Delete nodes
+> - Zoom controls
+> - Style/layout selection
+> - Undo/redo support

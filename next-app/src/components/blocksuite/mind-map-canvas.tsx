@@ -44,7 +44,7 @@ interface Disposable {
  */
 function clearContainer(container: HTMLElement): void {
   while (container.firstChild) {
-    container.removeChild(container.firstChild);
+    container.firstChild.remove();
   }
 }
 
@@ -76,7 +76,7 @@ function extractMindmapTree(
     // Try to access the tree structure - BlockSuite stores it in different ways
     // depending on the version
     if (mindmapElement.children) {
-      return mindmapElement.children as BlockSuiteMindmapNode;
+      return mindmapElement.children;
     }
 
     if (mindmapElement.tree?.element?.text) {
@@ -189,6 +189,7 @@ export function MindMapCanvas({
   layout = 2 as BlockSuiteLayoutType, // Default: BALANCE
   onTreeChange,
   onNodeSelect,
+  onRefsReady,
   readOnly = false,
   className,
 }: MindMapCanvasProps) {
@@ -261,7 +262,7 @@ export function MindMapCanvas({
         const handleSelection = createSelectionHandler(doc, surfaceId);
 
         // Try primary API: editor.host.selection
-        const editorElement = editor as unknown as {
+        const editorElement = editor as {
           host?: { selection?: SelectionSlots };
         };
         const selection = editorElement.host?.selection;
@@ -270,7 +271,7 @@ export function MindMapCanvas({
         }
 
         // Fallback: Try editor.std.selection (alternative BlockSuite API pattern)
-        const editorWithStd = editor as unknown as {
+        const editorWithStd = editor as {
           std?: { selection?: SelectionSlots };
         };
         const stdSelection = editorWithStd.std?.selection;
@@ -313,7 +314,7 @@ export function MindMapCanvas({
         if (typeof editor.remove === "function") {
           editor.remove();
         } else if (containerRef.current.firstChild) {
-          containerRef.current.removeChild(containerRef.current.firstChild);
+          containerRef.current.firstChild.remove();
         }
       } catch (e) {
         console.warn("MindMapCanvas cleanup warning:", e);
@@ -427,6 +428,16 @@ export function MindMapCanvas({
 
                 mindmapIdRef.current = mindmapId;
                 surfaceIdRef.current = surfaceId;
+
+                // Notify parent component that refs are ready for operations
+                if (onRefsReady) {
+                  onRefsReady({
+                    editor: editorRef.current,
+                    doc: docRef.current,
+                    mindmapId: mindmapId,
+                    surfaceId: surfaceId,
+                  });
+                }
                 return true;
               }
               return false;
@@ -577,6 +588,7 @@ export function MindMapCanvas({
     readOnly,
     onTreeChange,
     onNodeSelect,
+    onRefsReady,
     setupSelectionListener,
     cleanup,
   ]);
@@ -598,7 +610,7 @@ export function MindMapCanvas({
           </p>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             className="mt-4 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
             Reload Page
