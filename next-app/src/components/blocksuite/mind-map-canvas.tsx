@@ -224,6 +224,8 @@ export function MindMapCanvas({
 
           // Try to get the text of the selected node
           if (onNodeSelect) {
+            // TODO: Migrate to store.getBlock() when upgrading BlockSuite to v1.0+
+            // See: https://github.com/toeverything/blocksuite/blob/main/packages/docs/api/@blocksuite/store/classes/Store.md
             const surface = doc.getBlockById(surfaceId);
             if (surface) {
               const nodeText = extractNodeText(surface, elementId);
@@ -406,6 +408,7 @@ export function MindMapCanvas({
             if (!mounted || !surfaceId) return false;
 
             try {
+              // TODO: Migrate to store.getBlock() when upgrading BlockSuite to v1.0+
               const surface = doc.getBlockById(surfaceId);
 
               if (surface && "addElement" in surface) {
@@ -518,6 +521,7 @@ export function MindMapCanvas({
               storeWithSlots.slots.blockUpdated.subscribe(() => {
                 if (onTreeChange && mounted) {
                   // Try to extract the actual current tree from BlockSuite
+                  // TODO: Migrate to store.getBlock() when upgrading BlockSuite to v1.0+
                   const surface = doc.getBlockById(surfaceId);
                   const mindmapId = mindmapIdRef.current;
 

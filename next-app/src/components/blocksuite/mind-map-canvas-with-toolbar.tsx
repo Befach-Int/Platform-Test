@@ -126,6 +126,10 @@ export function MindMapCanvasWithToolbar({
     }
 
     try {
+      // TODO: Migrate to store.getBlock() when upgrading BlockSuite to v1.0+
+      // The getBlockById API is deprecated in v0.19.x but still functional.
+      // New API: store.getBlock(id) or store.getModelById(id)
+      // See: https://github.com/toeverything/blocksuite/blob/main/packages/docs/api/@blocksuite/store/classes/Store.md
       const surface = docRef.current.getBlockById(
         surfaceIdRef.current,
       ) as SurfaceBlock | null;
@@ -272,6 +276,7 @@ export function MindMapCanvasWithToolbar({
           console.log("[MindMapCanvasWithToolbar] Deleted node:", nodeId);
         } else if (docRef.current && surfaceIdRef.current) {
           // Fallback: Try surface deleteElement
+          // TODO: Migrate to store.getBlock() when upgrading BlockSuite (see getMindmapElement TODO)
           const surface = docRef.current.getBlockById(
             surfaceIdRef.current,
           ) as SurfaceBlock | null;
