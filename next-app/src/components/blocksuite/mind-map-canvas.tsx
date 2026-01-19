@@ -207,6 +207,48 @@ export function MindMapCanvas({
     return initialTree || DEFAULT_SAMPLE_TREE;
   }, [initialTree]);
 
+  // Selection handler callback - extracted to avoid code duplication
+  // This is called when BlockSuite selection changes to handle mindmap node selection
+  const createSelectionHandler = useCallback(
+    (doc: Doc, surfaceId: string) =>
+      (selections: BlockSuiteSelection[]) => {
+        // Find surface selection (contains mindmap elements)
+        const surfaceSelection = selections.find(
+          (sel) => sel.type === "surface",
+        );
+
+        if (surfaceSelection?.elements?.length) {
+          const elementId = surfaceSelection.elements[0];
+          setSelectedNodeId(elementId);
+
+          // Try to get the text of the selected node
+          if (onNodeSelect) {
+            const surface = doc.getBlockById(surfaceId);
+            if (surface) {
+              const nodeText = extractNodeText(surface, elementId);
+              onNodeSelect(elementId, nodeText || "Selected Node");
+            } else {
+              onNodeSelect(elementId, "Selected Node");
+            }
+          }
+        } else {
+          setSelectedNodeId(null);
+        }
+      },
+    [onNodeSelect],
+  );
+
+  // Type for selection slots structure
+  type SelectionSlots = {
+    slots?: {
+      changed?: {
+        on: (
+          callback: (selections: BlockSuiteSelection[]) => void,
+        ) => Disposable;
+      };
+    };
+  };
+
   // Setup selection listener for the BlockSuite editor
   const setupSelectionListener = useCallback(
     (
@@ -215,96 +257,25 @@ export function MindMapCanvas({
       surfaceId: string,
     ): Disposable | null => {
       try {
-        const editorElement = editor as unknown as {
-          host?: {
-            selection?: {
-              slots?: {
-                changed?: {
-                  on: (
-                    callback: (selections: BlockSuiteSelection[]) => void,
-                  ) => Disposable;
-                };
-              };
-              value?: BlockSuiteSelection[];
-            };
-          };
-        };
+        // Create the reusable selection handler
+        const handleSelection = createSelectionHandler(doc, surfaceId);
 
+        // Try primary API: editor.host.selection
+        const editorElement = editor as unknown as {
+          host?: { selection?: SelectionSlots };
+        };
         const selection = editorElement.host?.selection;
         if (selection?.slots?.changed) {
-          const disposable = selection.slots.changed.on(
-            (selections: BlockSuiteSelection[]) => {
-              // Find surface selection (contains mindmap elements)
-              const surfaceSelection = selections.find(
-                (sel) => sel.type === "surface",
-              );
-
-              if (surfaceSelection?.elements?.length) {
-                const elementId = surfaceSelection.elements[0];
-                setSelectedNodeId(elementId);
-
-                // Try to get the text of the selected node
-                if (onNodeSelect) {
-                  const surface = doc.getBlockById(surfaceId);
-                  if (surface) {
-                    const nodeText = extractNodeText(surface, elementId);
-                    onNodeSelect(elementId, nodeText || "Selected Node");
-                  } else {
-                    onNodeSelect(elementId, "Selected Node");
-                  }
-                }
-              } else {
-                setSelectedNodeId(null);
-              }
-            },
-          );
-
-          return disposable;
+          return selection.slots.changed.on(handleSelection);
         }
 
-        // Fallback: Try alternative selection API patterns
+        // Fallback: Try editor.std.selection (alternative BlockSuite API pattern)
         const editorWithStd = editor as unknown as {
-          std?: {
-            selection?: {
-              slots?: {
-                changed?: {
-                  on: (
-                    callback: (selections: BlockSuiteSelection[]) => void,
-                  ) => Disposable;
-                };
-              };
-            };
-          };
+          std?: { selection?: SelectionSlots };
         };
-
         const stdSelection = editorWithStd.std?.selection;
         if (stdSelection?.slots?.changed) {
-          const disposable = stdSelection.slots.changed.on(
-            (selections: BlockSuiteSelection[]) => {
-              const surfaceSelection = selections.find(
-                (sel) => sel.type === "surface",
-              );
-
-              if (surfaceSelection?.elements?.length) {
-                const elementId = surfaceSelection.elements[0];
-                setSelectedNodeId(elementId);
-
-                if (onNodeSelect) {
-                  const surface = doc.getBlockById(surfaceId);
-                  if (surface) {
-                    const nodeText = extractNodeText(surface, elementId);
-                    onNodeSelect(elementId, nodeText || "Selected Node");
-                  } else {
-                    onNodeSelect(elementId, "Selected Node");
-                  }
-                }
-              } else {
-                setSelectedNodeId(null);
-              }
-            },
-          );
-
-          return disposable;
+          return stdSelection.slots.changed.on(handleSelection);
         }
 
         // If no selection API found, log a warning for debugging
@@ -321,7 +292,7 @@ export function MindMapCanvas({
         return null;
       }
     },
-    [onNodeSelect],
+    [onNodeSelect, createSelectionHandler],
   );
 
   // Cleanup function
