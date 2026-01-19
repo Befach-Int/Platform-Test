@@ -31,6 +31,19 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { BlockSuiteMindmapStyle, BlockSuiteLayoutType } from './mindmap-types'
 
+// ============================================================================
+// ZOOM CONSTANTS
+// ============================================================================
+
+/** Minimum zoom level (10%) */
+const ZOOM_MIN = 0.1
+/** Maximum zoom level (300%) */
+const ZOOM_MAX = 3.0
+/** Zoom increment per step */
+const ZOOM_STEP = 0.1
+/** Default zoom level for fit view */
+const ZOOM_DEFAULT = 1.0
+
 /**
  * Props for the MindmapToolbar component
  */
@@ -174,7 +187,7 @@ function MindmapToolbar({
       } | null
       const viewport = editor?.host?.std?.get?.('viewport')
       if (viewport?.setZoom && typeof viewport.zoom === 'number') {
-        viewport.setZoom(Math.min(viewport.zoom + 0.1, 3))
+        viewport.setZoom(Math.min(viewport.zoom + ZOOM_STEP, ZOOM_MAX))
       } else {
         console.log('[MindmapToolbar] Zoom in - viewport API not available')
       }
@@ -201,7 +214,7 @@ function MindmapToolbar({
       } | null
       const viewport = editor?.host?.std?.get?.('viewport')
       if (viewport?.setZoom && typeof viewport.zoom === 'number') {
-        viewport.setZoom(Math.max(viewport.zoom - 0.1, 0.1))
+        viewport.setZoom(Math.max(viewport.zoom - ZOOM_STEP, ZOOM_MIN))
       } else {
         console.log('[MindmapToolbar] Zoom out - viewport API not available')
       }
@@ -231,9 +244,9 @@ function MindmapToolbar({
       } | null
       const viewport = editor?.host?.std?.get?.('viewport')
       if (viewport?.setZoom) {
-        // Reset zoom to 1 as a fallback fit behavior
-        viewport.setZoom(1)
-        console.log('[MindmapToolbar] Fit view - reset to zoom 1')
+        // Reset zoom to default as a fallback fit behavior
+        viewport.setZoom(ZOOM_DEFAULT)
+        console.log('[MindmapToolbar] Fit view - reset to default zoom')
       } else {
         console.log('[MindmapToolbar] Fit view - viewport API not available')
       }
