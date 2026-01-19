@@ -81,7 +81,7 @@ export function MindMapCanvasWithToolbar({
   showToolbar = true,
   toolbarPosition = "top",
   toolbarClassName,
-}: MindMapCanvasWithToolbarProps) {
+}: Readonly<MindMapCanvasWithToolbarProps>) {
   // Refs for BlockSuite internals (set by the canvas via onRefsReady callback)
   const docRef = useRef<Doc | null>(null);
   const editorRef = useRef<unknown>(null);
@@ -270,20 +270,18 @@ export function MindMapCanvasWithToolbar({
           mindmap.detachMindmap(nodeId);
           setSelectedNodeId(null);
           console.log("[MindMapCanvasWithToolbar] Deleted node:", nodeId);
-        } else {
+        } else if (docRef.current && surfaceIdRef.current) {
           // Fallback: Try surface deleteElement
-          if (docRef.current && surfaceIdRef.current) {
-            const surface = docRef.current.getBlockById(
-              surfaceIdRef.current,
-            ) as SurfaceBlock | null;
-            if (surface?.deleteElement) {
-              surface.deleteElement(nodeId);
-              setSelectedNodeId(null);
-              console.log(
-                "[MindMapCanvasWithToolbar] Deleted node via surface:",
-                nodeId,
-              );
-            }
+          const surface = docRef.current.getBlockById(
+            surfaceIdRef.current,
+          ) as SurfaceBlock | null;
+          if (surface?.deleteElement) {
+            surface.deleteElement(nodeId);
+            setSelectedNodeId(null);
+            console.log(
+              "[MindMapCanvasWithToolbar] Deleted node via surface:",
+              nodeId,
+            );
           }
         }
       } catch (e) {

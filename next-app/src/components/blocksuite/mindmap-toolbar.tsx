@@ -38,11 +38,11 @@ import { BlockSuiteMindmapStyle, BlockSuiteLayoutType } from './mindmap-types'
 /** Minimum zoom level (10%) */
 const ZOOM_MIN = 0.1
 /** Maximum zoom level (300%) */
-const ZOOM_MAX = 3.0
+const ZOOM_MAX = 3
 /** Zoom increment per step */
 const ZOOM_STEP = 0.1
 /** Default zoom level for fit view */
-const ZOOM_DEFAULT = 1.0
+const ZOOM_DEFAULT = 1
 
 /**
  * Props for the MindmapToolbar component
@@ -123,7 +123,7 @@ function MindmapToolbar({
   onRedo,
   readOnly = false,
   className,
-}: MindmapToolbarProps) {
+}: Readonly<MindmapToolbarProps>) {
   // Determine if node operations should be disabled
   const isNodeSelected = selectedNodeId !== null
   const isRootSelected = selectedNodeId === mindmapId
@@ -259,7 +259,7 @@ function MindmapToolbar({
    * Handle style selection change
    */
   const handleStyleChange = (value: string) => {
-    const newStyle = parseInt(value, 10) as BlockSuiteMindmapStyle
+    const newStyle = Number.parseInt(value, 10) as BlockSuiteMindmapStyle
     onStyleChange?.(newStyle)
   }
 
@@ -267,7 +267,7 @@ function MindmapToolbar({
    * Handle layout selection change
    */
   const handleLayoutChange = (value: string) => {
-    const newLayout = parseInt(value, 10) as BlockSuiteLayoutType
+    const newLayout = Number.parseInt(value, 10) as BlockSuiteLayoutType
     onLayoutChange?.(newLayout)
   }
 
