@@ -11,10 +11,48 @@
  * @see openspec/changes/simplify-blocksuite-standalone/
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page, type APIRequestContext } from '@playwright/test'
 
 // Test configuration
 test.describe.configure({ mode: 'serial' })
+
+// =============================================================================
+// Helper Functions (extracted to reduce duplication)
+// =============================================================================
+
+/**
+ * Login helper for authenticated tests
+ * Extracted from beforeEach blocks to reduce code duplication (SonarCloud rule)
+ */
+async function loginTestUser(page: Page): Promise<void> {
+  const email = process.env.TEST_USER_A_EMAIL!
+  const password = process.env.TEST_USER_A_PASSWORD!
+
+  await page.goto('/login')
+  await page.fill('input[name="email"]', email)
+  await page.fill('input[name="password"]', password)
+  await page.click('button[type="submit"]')
+  await page.waitForURL(/\/(dashboard|workspaces)/)
+}
+
+/**
+ * Check if test user credentials are available
+ */
+function hasTestUserCredentials(): boolean {
+  return !!(process.env.TEST_USER_A_EMAIL && process.env.TEST_USER_A_PASSWORD)
+}
+
+/**
+ * Helper to make API requests to blocksuite documents endpoint
+ * Extracted to reduce duplication in security tests
+ */
+async function postDocument(
+  request: APIRequestContext,
+  data: Record<string, unknown>
+): Promise<{ status: number }> {
+  const response = await request.post('/api/blocksuite/documents', { data })
+  return { status: response.status() }
+}
 
 test.describe('Canvas Routes', () => {
   test.describe('Authentication', () => {
@@ -110,24 +148,10 @@ test.describe('Canvas API', () => {
 
 test.describe('Canvas List Page (Authenticated)', () => {
   // Skip if no auth setup - these tests require authenticated user
-  test.skip(({ browserName }) => {
-    // Check if we have test user credentials
-    const hasTestUser = process.env.TEST_USER_A_EMAIL && process.env.TEST_USER_A_PASSWORD
-    return !hasTestUser
-  }, 'Requires TEST_USER_A credentials')
+  test.skip(() => !hasTestUserCredentials(), 'Requires TEST_USER_A credentials')
 
   test.beforeEach(async ({ page }) => {
-    // Login before each test
-    const email = process.env.TEST_USER_A_EMAIL!
-    const password = process.env.TEST_USER_A_PASSWORD!
-
-    await page.goto('/login')
-    await page.fill('input[name="email"]', email)
-    await page.fill('input[name="password"]', password)
-    await page.click('button[type="submit"]')
-
-    // Wait for redirect to dashboard or workspaces
-    await page.waitForURL(/\/(dashboard|workspaces)/)
+    await loginTestUser(page)
   })
 
   test('displays canvas list page with header', async ({ page }) => {
@@ -154,20 +178,10 @@ test.describe('Canvas List Page (Authenticated)', () => {
 })
 
 test.describe('New Canvas Page (Authenticated)', () => {
-  test.skip(({ browserName }) => {
-    const hasTestUser = process.env.TEST_USER_A_EMAIL && process.env.TEST_USER_A_PASSWORD
-    return !hasTestUser
-  }, 'Requires TEST_USER_A credentials')
+  test.skip(() => !hasTestUserCredentials(), 'Requires TEST_USER_A credentials')
 
   test.beforeEach(async ({ page }) => {
-    const email = process.env.TEST_USER_A_EMAIL!
-    const password = process.env.TEST_USER_A_PASSWORD!
-
-    await page.goto('/login')
-    await page.fill('input[name="email"]', email)
-    await page.fill('input[name="password"]', password)
-    await page.click('button[type="submit"]')
-    await page.waitForURL(/\/(dashboard|workspaces)/)
+    await loginTestUser(page)
   })
 
   test('displays new canvas form', async ({ page }) => {
@@ -236,51 +250,38 @@ test.describe('Canvas Sidebar Navigation', () => {
 
 test.describe('Security', () => {
   test('API rejects requests without workspaceId', async ({ request }) => {
-    const response = await request.post('/api/blocksuite/documents', {
-      data: {
-        // Missing workspaceId
-        documentType: 'mindmap',
-        title: 'Test',
-      },
+    const { status } = await postDocument(request, {
+      documentType: 'mindmap',
+      title: 'Test',
     })
-
-    expect([400, 401]).toContain(response.status())
+    expect([400, 401]).toContain(status)
   })
 
   test('API rejects invalid workspaceId format', async ({ request }) => {
-    const response = await request.post('/api/blocksuite/documents', {
-      data: {
-        workspaceId: '../../../etc/passwd', // Path traversal attempt
-        documentType: 'mindmap',
-        title: 'Test',
-      },
+    const { status } = await postDocument(request, {
+      workspaceId: '../../../etc/passwd', // Path traversal attempt
+      documentType: 'mindmap',
+      title: 'Test',
     })
-
-    expect([400, 401]).toContain(response.status())
+    expect([400, 401]).toContain(status)
   })
 
   test('API rejects SQL injection attempts', async ({ request }) => {
-    const response = await request.post('/api/blocksuite/documents', {
-      data: {
-        workspaceId: "'; DROP TABLE users; --",
-        documentType: 'mindmap',
-        title: 'Test',
-      },
+    const { status } = await postDocument(request, {
+      workspaceId: "'; DROP TABLE users; --",
+      documentType: 'mindmap',
+      title: 'Test',
     })
-
-    expect([400, 401]).toContain(response.status())
+    expect([400, 401]).toContain(status)
   })
 
   test('API rejects XSS in title', async ({ request }) => {
-    const response = await request.post('/api/blocksuite/documents', {
-      data: {
-        workspaceId: 'test-workspace',
-        documentType: 'mindmap',
-        title: '<script>alert("xss")</script>',
-      },
+    const { status } = await postDocument(request, {
+      workspaceId: 'test-workspace',
+      documentType: 'mindmap',
+      title: '<script>alert("xss")</script>',
     })
-
     // Should either sanitize or reject - either way, not 500
-    expect([200, 400, 401, 403]).toContain(response.status())
+    expect([200, 400, 401, 403]).toContain(status)
   })
 })
