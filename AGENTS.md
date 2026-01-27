@@ -1,18 +1,31 @@
 <!-- OPENSPEC:START -->
-# OpenSpec Instructions
-
-These instructions are for AI assistants working in this project.
-
-Always open `@/openspec/AGENTS.md` when the request:
-- Mentions planning or proposals (words like proposal, spec, change, plan)
-- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
-- Sounds ambiguous and you need the authoritative spec before coding
-
-Use `@/openspec/AGENTS.md` to learn:
-- How to create and apply change proposals
-- Spec format and conventions
-- Project structure and guidelines
-
-Keep this managed block so 'openspec update' can refresh the instructions.
-
+Open `openspec/AGENTS.md` for proposals, specs, or architecture changes.
 <!-- OPENSPEC:END -->
+
+# PLM Platform
+
+Product Lifecycle Management - Next.js 16 + TypeScript + Supabase + Vercel
+
+## Critical Rules
+
+- **Package manager**: `bun` (never npm/npx)
+- **IDs**: `Date.now().toString()` (never UUID)
+- **Queries**: Always filter by `team_id`
+- **Tables**: `team_id TEXT NOT NULL` + RLS policies
+- **UI**: shadcn/ui only (no custom CSS)
+- **Types**: No `any`, strict mode
+
+## Detailed Rules
+
+- [Core Principles](.claude/rules/01-core-principles.md) - Bun, IDs, team isolation, TypeScript, UI
+- [Architecture](.claude/rules/02-architecture.md) - Phase/Status, workspace modes, strategy hierarchy
+- [Git Workflow](.claude/rules/03-workflow.md) - Branching, commits, PRs
+- [AI & Agents](.claude/rules/04-ai-routing.md) - Model routing, multi-agent patterns
+- [Database](.claude/rules/05-database.md) - Supabase, migrations, RLS, real-time
+- [Commands](.claude/rules/06-commands.md) - MCP servers, skills, slash commands
+
+## Key Links
+
+- [Architecture](docs/ARCHITECTURE_CONSOLIDATION.md) - Canonical source of truth
+- [Progress](docs/planning/PROGRESS.md) - Current module status
+- [API Reference](docs/reference/API_REFERENCE.md) - 20+ endpoints

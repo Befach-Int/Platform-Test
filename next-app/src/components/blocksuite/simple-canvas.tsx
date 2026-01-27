@@ -5,7 +5,6 @@ import * as Y from 'yjs'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { HybridProvider } from './hybrid-provider'
-import { loadYjsState } from './storage-client'
 import { LoadingSkeleton } from './loading-skeleton'
 
 // Types for BlockSuite modules (dynamically imported)
@@ -104,6 +103,7 @@ export function SimpleCanvas({
     }
 
     let mounted = true
+    let initTimeout: ReturnType<typeof setTimeout> | null = null
 
     const initEditor = async () => {
       if (!containerRef.current) return
@@ -111,6 +111,15 @@ export function SimpleCanvas({
       try {
         setIsLoading(true)
         setError(null)
+
+        console.log('[SimpleCanvas] Starting initialization...', { documentId, teamId, editorMode })
+
+        // Set a timeout to catch hanging initialization
+        initTimeout = setTimeout(() => {
+          if (mounted) {
+            console.warn('[SimpleCanvas] Initialization timeout - proceeding without persistence')
+          }
+        }, 10000)
 
         // Dynamic imports for SSR safety
         const [presetsModule, blocksModule, storeModule, blocksEffectsModule, presetsEffectsModule] = await Promise.all([
@@ -123,9 +132,9 @@ export function SimpleCanvas({
 
         if (!mounted) return
 
-        const { EdgelessEditor, PageEditor } = presetsModule
+        const { AffineEditorContainer } = presetsModule
         const { AffineSchemas } = blocksModule
-        const { Schema, DocCollection } = storeModule
+        const { Schema, DocCollection, Text } = storeModule
         const { effects: blocksEffects } = blocksEffectsModule
         const { effects: presetsEffects } = presetsEffectsModule
 
@@ -135,11 +144,13 @@ export function SimpleCanvas({
             blocksEffects()
             presetsEffects()
             effectsRegistered = true
+            console.log('[SimpleCanvas] Custom elements registered')
           } catch (err) {
             const errorMsg = err instanceof Error ? err.message : String(err)
             if (!errorMsg.includes('already been defined')) {
               throw err
             }
+            console.log('[SimpleCanvas] Custom elements already registered')
           }
         }
 
@@ -159,56 +170,73 @@ export function SimpleCanvas({
         collection.meta.initialize()
         const doc = collection.createDoc({ id: documentId })
 
-        // Try to load existing state from storage
-        const existingState = await loadYjsState(supabase, teamId, documentId)
-
-        if (existingState) {
-          // Apply existing state
-          Y.applyUpdate(yjsDoc, existingState)
-        }
-
-        // Initialize document with required blocks
+        // Initialize document with required blocks FIRST (fast path)
         await doc.load(() => {
           // Only add blocks if doc is empty
           if (!doc.root) {
-            const pageBlockId = doc.addBlock('affine:page', {})
+            console.log('[SimpleCanvas] Initializing empty document with blocks')
+            // CRITICAL: Use Text objects for editable content - enables keyboard input
+            const pageBlockId = doc.addBlock('affine:page', {
+              title: new Text(''),
+            })
             doc.addBlock('affine:surface', {}, pageBlockId)
             const noteBlockId = doc.addBlock('affine:note', {}, pageBlockId)
-            doc.addBlock('affine:paragraph', {}, noteBlockId)
+            doc.addBlock('affine:paragraph', { text: new Text('') }, noteBlockId)
           }
         })
 
         if (!mounted) return
 
-        // Create HybridProvider for persistence
-        const provider = new HybridProvider(yjsDoc, {
-          documentId,
-          teamId,
-          supabase,
-          debounceMs: 2000,
-          onConnectionChange: (connected) => {
-            setIsConnected(connected)
-          },
-          onSyncError: (err) => {
-            console.error('[SimpleCanvas] Sync error:', err)
-          },
-        })
+        // Set up persistence in background (non-blocking)
+        // HybridProvider handles storage loading internally
+        const setupPersistence = async () => {
+          try {
+            const provider = new HybridProvider(yjsDoc, {
+              documentId,
+              teamId,
+              supabase,
+              debounceMs: 2000,
+              onConnectionChange: (connected) => {
+                setIsConnected(connected)
+              },
+              onSyncError: (err) => {
+                console.warn('[SimpleCanvas] Sync error (non-fatal):', err)
+              },
+            })
 
-        providerRef.current = provider
-        await provider.load()
+            providerRef.current = provider
+
+            // Load existing state (with 2s timeout)
+            await Promise.race([
+              provider.load(),
+              new Promise<void>((resolve) => setTimeout(resolve, 2000))
+            ])
+            console.log('[SimpleCanvas] Provider loaded')
+          } catch (providerError) {
+            console.warn('[SimpleCanvas] Persistence setup failed (continuing locally):', providerError)
+          }
+        }
+
+        // Don't await - run persistence setup in background
+        setupPersistence()
 
         if (!mounted) return
 
-        // Create editor
-        const EditorClass = editorMode === 'page' ? PageEditor : EdgelessEditor
-        const editor = new EditorClass()
+        // Create editor using AffineEditorContainer for full UI experience
+        console.log('[SimpleCanvas] Creating', editorMode, 'editor with AffineEditorContainer')
+
+        // AffineEditorContainer provides full editor UI with toolbars and mode switching
+        const editor = new AffineEditorContainer()
+        editor.doc = doc
+        editor.mode = editorMode
+        editor.autofocus = true
 
         const editorElement = editor as unknown as {
           doc: Doc
+          mode: string
           readonly: boolean
           updateComplete: Promise<boolean>
         }
-        editorElement.doc = doc as unknown as Doc
         editorElement.readonly = readOnly
 
         // Mount editor
@@ -219,8 +247,19 @@ export function SimpleCanvas({
           containerRef.current.appendChild(editor as Node)
           editorRef.current = editor
 
-          await editorElement.updateComplete
+          // Wait for editor render with timeout
+          try {
+            await Promise.race([
+              editorElement.updateComplete,
+              new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Editor render timeout')), 5000))
+            ])
+            console.log('[SimpleCanvas] Editor mounted successfully')
+          } catch (renderError) {
+            console.warn('[SimpleCanvas] Editor render warning:', renderError)
+            // Continue anyway - editor might still work
+          }
 
+          if (initTimeout) clearTimeout(initTimeout)
           setIsLoading(false)
           onReady?.()
 
@@ -236,6 +275,7 @@ export function SimpleCanvas({
         }
       } catch (e) {
         console.error('[SimpleCanvas] Failed to initialize:', e)
+        if (initTimeout) clearTimeout(initTimeout)
         if (mounted) {
           setError(e instanceof Error ? e.message : 'Failed to load canvas')
           setIsLoading(false)
@@ -247,6 +287,7 @@ export function SimpleCanvas({
 
     return () => {
       mounted = false
+      if (initTimeout) clearTimeout(initTimeout)
       const editor = editorRef.current as { _checkInterval?: ReturnType<typeof setInterval> } | null
       if (editor?._checkInterval) {
         clearInterval(editor._checkInterval)

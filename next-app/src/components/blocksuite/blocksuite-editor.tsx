@@ -132,6 +132,8 @@ export function BlockSuiteEditor({
         setIsLoading(true)
         setError(null)
 
+        console.log('[BlockSuiteEditor] Starting initialization...', { mode, documentId })
+
         // Dynamic imports to avoid SSR issues
         // BlockSuite uses browser APIs that aren't available during SSR
         // Note: BlockSuite v0.19.x requires manual Schema/DocCollection setup
@@ -145,9 +147,9 @@ export function BlockSuiteEditor({
 
         if (!mounted) return
 
-        const { EdgelessEditor, PageEditor } = presetsModule
+        const { EdgelessEditor, PageEditor, AffineEditorContainer } = presetsModule
         const { AffineSchemas } = blocksModule
-        const { Schema, DocCollection } = storeModule
+        const { Schema, DocCollection, Text } = storeModule
         const { effects: blocksEffects } = blocksEffectsModule
         const { effects: presetsEffects } = presetsEffectsModule
 
@@ -160,15 +162,15 @@ export function BlockSuiteEditor({
             blocksEffects()
             presetsEffects()
             effectsRegistered = true
-            console.log('[BlockSuite] Custom elements registered successfully')
+            console.log('[BlockSuiteEditor] Custom elements registered successfully')
           } catch (error) {
             // Ignore "already defined" errors - they're harmless
             const errorMsg = error instanceof Error ? error.message : String(error)
             if (!errorMsg.includes('already been defined')) {
-              console.error('[BlockSuite] Failed to register effects:', error)
+              console.error('[BlockSuiteEditor] Failed to register effects:', error)
               throw error
             }
-            console.log('[BlockSuite] Custom elements already registered, continuing')
+            console.log('[BlockSuiteEditor] Custom elements already registered, continuing')
           }
         }
 
@@ -191,38 +193,56 @@ export function BlockSuiteEditor({
         collection.meta.initialize()
 
         const doc = collection.createDoc({ id: docId })
+        console.log('[BlockSuiteEditor] Doc created:', docId)
 
         // Initialize with required root blocks
         // IMPORTANT: doc.load() returns a Promise in BlockSuite v0.19.x
         // We must await it to ensure blocks are created before proceeding
+        // CRITICAL: Use Text objects for editable content - this enables proper keyboard input
         await doc.load(() => {
-          const pageBlockId = doc.addBlock('affine:page', {})
+          const pageBlockId = doc.addBlock('affine:page', {
+            title: new Text(''),
+          })
           doc.addBlock('affine:surface', {}, pageBlockId)
           const noteBlockId = doc.addBlock('affine:note', {}, pageBlockId)
-          doc.addBlock('affine:paragraph', {}, noteBlockId)
+          doc.addBlock('affine:paragraph', { text: new Text('') }, noteBlockId)
         })
 
         docRef.current = doc
+        console.log('[BlockSuiteEditor] Doc loaded, root:', doc.root?.id)
 
         if (!mounted) return
 
         // Create the appropriate editor
+        // Use AffineEditorContainer for full editing experience with toolbars
+        // Fall back to individual editors for specific use cases
+        console.log('[BlockSuiteEditor] Creating', mode, 'editor')
         let editor: unknown
+        let useContainer = true // Use container for better UI
 
-        if (mode === 'edgeless') {
+        if (useContainer) {
+          // AffineEditorContainer provides full editor UI with mode switching
+          const container = new AffineEditorContainer()
+          container.doc = doc
+          container.mode = mode
+          container.autofocus = true
+          editor = container
+        } else if (mode === 'edgeless') {
           editor = new EdgelessEditor()
         } else {
           editor = new PageEditor()
         }
 
-        // Set editor properties
+        // Set editor properties BEFORE mounting to DOM
         const editorElement = editor as {
           doc: Doc
           mode: string
           readonly: boolean
           updateComplete: Promise<boolean>
         }
-        editorElement.doc = doc
+        if (!useContainer) {
+          editorElement.doc = doc
+        }
         editorElement.readonly = readOnly
 
         // Mount to container
@@ -233,6 +253,7 @@ export function BlockSuiteEditor({
           // Append the editor element
           containerRef.current.appendChild(editor as Node)
           editorRef.current = editor
+          console.log('[BlockSuiteEditor] Editor appended to DOM')
 
           // Start suppressing BlockSuite internal errors early
           // These errors are non-fatal and occur during async initialization
@@ -251,12 +272,20 @@ export function BlockSuiteEditor({
           // Keep error suppression active for 10 seconds to cover all async initialization
           setTimeout(() => {
             console.error = originalError
-            console.log('[BlockSuiteEditor] Error suppression ended')
           }, 10000)
 
-          // CRITICAL: Wait for the editor's render() to complete
+          // CRITICAL: Wait for the editor's render() to complete with timeout
           // Without this, we get "Host is not ready to use" errors
-          await editorElement.updateComplete
+          try {
+            await Promise.race([
+              editorElement.updateComplete,
+              new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Editor render timeout')), 5000))
+            ])
+            console.log('[BlockSuiteEditor] Editor rendered successfully')
+          } catch (renderError) {
+            console.warn('[BlockSuiteEditor] Editor render warning (continuing):', renderError)
+            // Continue anyway - editor might still work
+          }
 
           // Set up change listener if doc has slots
           const docWithSlots = doc as Doc & {
@@ -274,15 +303,15 @@ export function BlockSuiteEditor({
             })
           }
 
+          setIsLoading(false)
+
           // Notify ready
           if (onReady && mounted) {
             onReady(doc)
           }
-
-          setIsLoading(false)
         }
       } catch (e) {
-        console.error('Failed to initialize BlockSuite editor:', e)
+        console.error('[BlockSuiteEditor] Failed to initialize:', e)
         if (mounted) {
           setError(e instanceof Error ? e.message : 'Failed to load editor')
           setIsLoading(false)

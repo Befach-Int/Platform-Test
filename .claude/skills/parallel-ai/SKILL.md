@@ -9,8 +9,22 @@ description: Tool for web search, data extraction, and research using Parallel A
 
 ## Setup
 
-API Key: https://platform.parallel.ai  
-Environment: `export PARALLEL_API_KEY="your-key"`
+API Key: https://platform.parallel.ai
+Store in: `.env.local` as `PARALLEL_API_KEY=your-key`
+
+**Load API key (Windows/Git Bash compatible)**:
+```bash
+API_KEY=$(grep "^PARALLEL_API_KEY=" .env.local | cut -d= -f2)
+```
+
+**Usage in curl**:
+```bash
+curl -s -X POST "https://api.parallel.ai/v1beta/search" \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "parallel-beta: search-extract-2025-10-10" \
+  -d '{"objective": "your query"}'
+```
 
 ## The 4 APIs at a Glance
 

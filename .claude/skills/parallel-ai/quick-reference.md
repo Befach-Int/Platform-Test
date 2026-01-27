@@ -12,9 +12,14 @@
 ## Headers (All Requests)
 
 ```
-x-api-key: your-api-key
+x-api-key: $API_KEY
 Content-Type: application/json
 parallel-beta: search-extract-2025-10-10     (Search/Extract only)
+```
+
+**Load API key first (Windows compatible)**:
+```bash
+API_KEY=$(grep "^PARALLEL_API_KEY=" .env.local | cut -d= -f2)
 ```
 
 ## Processors
